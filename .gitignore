@@ -106,3 +106,4 @@ local.properties
 
 # Code Recommenders
 .recommenders/
+/Debug/
