@@ -23,13 +23,13 @@ class Ball{
 
 			/**
 			 * Checks if a given vector is valid to use
-			 * @param	vector	boost::numeric::ublas::vector<double>	The vector to check
-			 * @return			bool									True if the vector is valid,
-			 * 															false if it isn't
+			 * @param	v	boost::numeric::ublas::vector<double>	The vector to check
+			 * @return		bool									True if the vector is valid,
+			 * 														false if it isn't
 			 */
 
-			bool is_vector_valid(boost::numeric::ublas::vector<double> vector){
-				if(vector.size() == 2 || vector.size() == 3){ /* Only 2 and 3 dimensional vectors make sense */
+			bool is_vector_valid(boost::numeric::ublas::vector<double> v){
+				if(v.size() == 2 || v.size() == 3){ /* Only 2 and 3 dimensional vectors make sense */
 					return true;
 				}
 
