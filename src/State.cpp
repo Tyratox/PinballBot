@@ -23,7 +23,7 @@ class State{
 		 * @return		double	The expected reward
 		 */
 
-		double reward(State s){
+		double getReward(State s){
 
 
 
@@ -31,13 +31,12 @@ class State{
 		}
 
 		/**
-		 * Calculates the expected value the given state will in the next turn and in the future.
-		 * Policies, the reward function and the model of the environment are used to do this calculation.
+		 * Calculates the expected value the given state will in the next turn and in the future => convergence
 		 * @param	s	State	The State of which the value is calculated
 		 * @return		double	The expected value
 		 */
 
-		double value(State s){
+		double getValue(State s){
 
 
 			return 0.0;

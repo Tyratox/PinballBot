@@ -22,7 +22,7 @@ class Ball{
 		 * 														false if it isn't
 		 */
 
-		bool is_vector_valid(boost::numeric::ublas::vector<double> v){
+		bool isVectorValid(boost::numeric::ublas::vector<double> v){
 			if(v.size() == 2 || v.size() == 3){ /* Only 2 and 3 dimensional vectors make sense */
 				return true;
 			}
@@ -38,10 +38,10 @@ class Ball{
 		Ball() : Ball(3) {};
 
 		Ball(int dimensions){
-			if(this->is_vector_valid(boost::numeric::ublas::vector<double>(dimensions))){
-				this->set_position(boost::numeric::ublas::vector<double>(dimensions));
-				this->set_velocity(boost::numeric::ublas::vector<double>(dimensions));
-				this->set_acceleration(boost::numeric::ublas::vector<double>(dimensions));
+			if(this->isVectorValid(boost::numeric::ublas::vector<double>(dimensions))){
+				this->setPosition(boost::numeric::ublas::vector<double>(dimensions));
+				this->setVelocity(boost::numeric::ublas::vector<double>(dimensions));
+				this->setAcceleration(boost::numeric::ublas::vector<double>(dimensions));
 			}
 		}
 
@@ -51,9 +51,9 @@ class Ball{
 		 * @return				bool									True if the variable was successfully updated,
 		 * 																false if an error occurred
 		 */
-		bool set_position(boost::numeric::ublas::vector<double> position){
+		bool setPosition(boost::numeric::ublas::vector<double> position){
 
-			if(this->is_vector_valid(position)){
+			if(this->isVectorValid(position)){
 				this->position = position;
 
 				return true;
@@ -66,18 +66,18 @@ class Ball{
 		 * Retrieves the current ball position
 		 * @return	boost::numeric::ublas::vector<double>	The current ball position
 		 */
-		boost::numeric::ublas::vector<double> get_position(){
+		boost::numeric::ublas::vector<double> getPosition(){
 			return this->position;
 		}
 
 		/**
 		 * Updates the ball velocity
 		 * @param	velocity	boost::numeric::ublas::vector<double>	The new ball velocity
-		 * @return					bool									True if the variable was successfully updated,
-		 * 																	false if an error occurred
+		 * @return					bool								True if the variable was successfully updated,
+		 * 																false if an error occurred
 		 */
-		bool set_velocity(boost::numeric::ublas::vector<double> velocity){
-			if(this->is_vector_valid(velocity)){
+		bool setVelocity(boost::numeric::ublas::vector<double> velocity){
+			if(this->isVectorValid(velocity)){
 				this->velocity = velocity;
 
 				return true;
@@ -90,18 +90,18 @@ class Ball{
 		 * Retrieves the current ball velocity
 		 * @return	boost::numeric::ublas::vector<double>	The current ball velocity
 		 */
-		boost::numeric::ublas::vector<double> get_velocity(){
+		boost::numeric::ublas::vector<double> getVelocity(){
 			return this->velocity;
 		}
 
 		/**
 		 * Updates the ball position
 		 * @param	acceleration	boost::numeric::ublas::vector<double>	The new ball acceleration
-		 * @return						bool									True if the variable was successfully updated,
-		 * 																		false if an error occurred
+		 * @return						bool								True if the variable was successfully updated,
+		 * 																	false if an error occurred
 		 */
-		bool set_acceleration(boost::numeric::ublas::vector<double> acceleration){
-			if(this->is_vector_valid(acceleration)){
+		bool setAcceleration(boost::numeric::ublas::vector<double> acceleration){
+			if(this->isVectorValid(acceleration)){
 				this->acceleration = acceleration;
 
 				return true;
@@ -114,7 +114,7 @@ class Ball{
 		 * Retrieves the current ball acceleration
 		 * @return	boost::numeric::ublas::vector<double>	The current ball acceleration
 		 */
-		boost::numeric::ublas::vector<double> get_acceleration(){
+		boost::numeric::ublas::vector<double> getAcceleration(){
 			return this->acceleration;
 		}
 };
