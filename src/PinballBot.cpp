@@ -13,9 +13,15 @@
 #include "Ball.cpp"
 #include "State.cpp"
 
+#include "Simulation.cpp"
+
 int main() {
 
-
+	PinballSimulation* sim = new PinballSimulation();
+	for(int i=0;i<60;i++){
+		sim->step();
+		sim->debugPlayingBall();
+	}
 
 	return 0;
 }
