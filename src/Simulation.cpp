@@ -4,12 +4,27 @@
  *  The box2d simulation of the pinball machine
  */
 
+#ifndef PINBALL_BOT_SIMULATION
+#define PINBALL_BOT_SIMULATION
+
 #include <stdio.h>
 #include <Box2D/Box2D.h>
 
-const float32		TIME_STEP				= 1.0f / 60.0f;
 const int32			VELOCITY_ITERATIONS		= 6;
 const int32			POSITION_ITERATIONS		= 2;
+
+const float			GRAVITY_X				= 0;
+const float			GRAVITY_Y				= 5.0f; /*positive, cause we start in the top left corner*/
+
+const float			FLIPPER_HEIGHT			= 1.5f;
+const float			FLIPPER_WIDTH			= 0.75f;
+
+const float			WALL_THICKNESS			= 0.05f;
+
+const float			BALL_RADIUS				= 0.05f;
+const float			BALL_DENSITY			= 0.0001f;
+const float			BALL_FRICTION			= 0.01f;
+const float			BALL_RESTITUTION		= 1.0f;
 
 class PinballSimulation{
 	private:
@@ -40,15 +55,15 @@ class PinballSimulation{
 
 	public:
 
-		PinballSimulation() : gravity(0.0f, -5.0f), world(this->gravity){
+		PinballSimulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
 			/* Initializes a world with gravity pulling downwards */
 
 			/* Sets the position of the 4 boundaries */
-			this->ceilingBodyDef.position.Set(0.0f, 2.0f);
-			this->floorBodyDef.position.Set(0.0f, -2.0f);
+			this->ceilingBodyDef.position.Set((FLIPPER_WIDTH/2), (WALL_THICKNESS/2));
+			this->floorBodyDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT-(WALL_THICKNESS/2)));
 
-			this->leftWallBodyDef.position.Set(-2.0f, 0.0f);
-			this->rightWallBodyDef.position.Set(2.0f,  0.0f);
+			this->leftWallBodyDef.position.Set((WALL_THICKNESS/2), (FLIPPER_HEIGHT/2));
+			this->rightWallBodyDef.position.Set((FLIPPER_WIDTH - (WALL_THICKNESS/2)),  (FLIPPER_HEIGHT/2));
 
 			/* Adds the 4 boundaries to the world */
 			this->ceilingBody 					= world.CreateBody(&this->ceilingBodyDef);
@@ -58,11 +73,11 @@ class PinballSimulation{
 			this->rightWallBody 				= world.CreateBody(&this->rightWallBodyDef);
 
 			/* Define the box size of the boundaries, the entered values are half the size in the world */
-			this->ceilingBox.SetAsBox(1.0f, 0.05f);
-			this->floorBox.SetAsBox(1.0f, 0.05f);
+			this->ceilingBox.SetAsBox(FLIPPER_WIDTH, WALL_THICKNESS);
+			this->floorBox.SetAsBox(FLIPPER_WIDTH, WALL_THICKNESS);
 
-			this->leftWallBox.SetAsBox(0.05f, 1.0f);
-			this->rightWallBox.SetAsBox(0.05f, 1.0f);
+			this->leftWallBox.SetAsBox(WALL_THICKNESS, FLIPPER_HEIGHT);
+			this->rightWallBox.SetAsBox(WALL_THICKNESS, FLIPPER_HEIGHT);
 
 			/* Creates fixtures for the boundaries, set the density to 0 because they're static anyway */
 			ceilingBody->CreateFixture(&this->ceilingBox, 0.0f);
@@ -73,21 +88,30 @@ class PinballSimulation{
 
 			/* Init playing ball */
 			ballDef.type						= b2_dynamicBody;
-			ballDef.position.Set(0.0f, 0.0f);
+			ballDef.position.Set((FLIPPER_WIDTH/2) - (BALL_RADIUS/2), (FLIPPER_HEIGHT/2) - (BALL_RADIUS/2));
 			ballBody							= world.CreateBody(&this->ballDef);
 
 			this->ballSphere.m_p.Set(0.0f, 0.0f);
-			this->ballSphere.m_radius			= 0.2f;
+			this->ballSphere.m_radius			= BALL_RADIUS;
 
 			this->ballFixtureDef.shape			= &this->ballSphere;
-			this->ballFixtureDef.density		= 1.0f;
-			this->ballFixtureDef.friction		= 0.3f;
+			this->ballFixtureDef.density		= BALL_DENSITY;
+			this->ballFixtureDef.friction		= BALL_FRICTION;
+			this->ballFixtureDef.restitution	= BALL_RESTITUTION;
 
 			this->ballBody->CreateFixture(&this->ballFixtureDef);
 		}
 
-		void step(){
-			world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+		void step(float32 time_step){
+			world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+		}
+
+		void setRenderer(b2Draw* draw){
+			this->world.SetDebugDraw( draw );
+		}
+
+		void render(){
+			this->world.DrawDebugData();
 		}
 
 		void debugPlayingBall(){
@@ -98,3 +122,5 @@ class PinballSimulation{
 		}
 
 };
+
+#endif /* PINBALL_BOT_SIMULATION */
