@@ -29,7 +29,6 @@ const bool					RENDER				= true;
 const float					FPS					= 60.0f;
 const float					TIME_STEP			= 1.0f / FPS;
 const float					TICK_INTERVAL		= 1000.0f / FPS;
-const unsigned long long	TIME_STEP_MICROS	= round(TIME_STEP) * 10E5; /*E = 10^5 => 10*10^5 = 1'^6*/
 
 bool						quit				= false;
 
@@ -58,7 +57,7 @@ int main(int argc, char** argv) {
 	PinballSimulation *sim = new PinballSimulation();
 
 	if(RENDER){
-		r = new Renderer(640, 480);
+		r = new Renderer(320, 640);
 		r->SetFlags( b2Draw::e_shapeBit );
 
 		sim->setRenderer(r);

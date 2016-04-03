@@ -31,6 +31,12 @@ class Renderer : public b2Draw{
 
 	private:
 
+		const float NUMERATOR			= 7.0f;
+		const float DENOMINATOR			= 9.0f;
+
+		const float SCALING				= NUMERATOR / DENOMINATOR;
+		const float PADDING_PERCENT		= (DENOMINATOR - NUMERATOR) / DENOMINATOR;
+
 		int		width;
 		int		height;
 
@@ -52,10 +58,10 @@ class Renderer : public b2Draw{
 			return round(meters * oneMeterInPX);
 		}
 
-		std::pair<int,int> toScreenCoords(b2Vec2 position){
-			return std::pair< int, int > (
-					metersToPixels(position.x),
-					metersToPixels(position.y)
+		b2Vec2 toScreenCoords(b2Vec2 position){
+			return b2Vec2 (
+					round(width * PADDING_PERCENT) + metersToPixels(position.x),
+					round(height * PADDING_PERCENT) + metersToPixels(position.y)
 			);
 		}
 
@@ -83,7 +89,7 @@ class Renderer : public b2Draw{
 			//updates the width and height if there's a high DPI and calc other vars afterwards
 			SDL_GL_GetDrawableSize(window, &width, &height);
 
-			oneMeterInPX = width/2; /* one meter is equal to half of the width of the window */
+			oneMeterInPX = (SCALING) * height; /* one meter is equal to half of the width of the window */
 
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
@@ -114,19 +120,21 @@ class Renderer : public b2Draw{
 			//std::cout << "Polygon with " << vertexCount << " vertices";
 
 			for(int i=0;i<vertexCount;i++){
-				x[i] = metersToPixels(vertices[i].x);
-				y[i] = metersToPixels(vertices[i].y);
+				b2Vec2 vec = toScreenCoords(vertices[i]);
+
+				x[i] = vec.x;
+				y[i] = vec.y;
 
 				//std::cout << "Vert: " << x[i] << "|" << y[i] << std::endl;
 			}
 
-			polygonRGBA(renderer, x, y, vertexCount, 255, 0, 0, 255);
+			polygonRGBA(renderer, x, y, vertexCount, 0, 0, 0, 255);
 		}
 
 		void dCircle(const b2Vec2& center, float32 radius, const b2Color& color){
-			std::pair<int,int> coords = toScreenCoords(center);
-			//std::cout << "draw circle at " << coords.first << "|" << center.x << "||" << coords.second << "|" << center.y << " and radius " <<  metersToPixels(radius) << "(" << radius << ")" << std::endl;
-			filledCircleColor(renderer, coords.first, coords.second, metersToPixels(radius), createRGBA(255,0,0,255));
+			b2Vec2 coords = toScreenCoords(center);
+			//std::cout << "draw circle at " << coords.x << "|" << center.x << "||" << coords.y << "|" << center.y << " and radius " <<  metersToPixels(radius) << "(" << radius << ")" << std::endl;
+			filledCircleRGBA(renderer, coords.x, coords.y, metersToPixels(radius), 0, 0, 0, 255);
 		}
 
 		void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
