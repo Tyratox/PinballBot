@@ -30,7 +30,11 @@ const float					FPS					= 60.0f;
 const float					TIME_STEP			= 1.0f / FPS;
 const float					TICK_INTERVAL		= 1000.0f / FPS;
 
+const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
+
 bool						quit				= false;
+bool						leftFlipper			= false;
+bool						rightFlipper		= false;
 
 Renderer					*r;
 SDL_Event					e;
@@ -71,6 +75,27 @@ int main(int argc, char** argv) {
 				if( e.type == SDL_QUIT ){
 					quit = true;
 				}
+
+				if (KEYS[SDL_SCANCODE_LEFT]){
+					if(!leftFlipper){
+						sim->enableLeftFlipper();
+						leftFlipper = true;
+					}
+				}else if(leftFlipper){
+					sim->disableLeftFlipper();
+					leftFlipper = false;
+				}
+
+				if (KEYS[SDL_SCANCODE_RIGHT]){
+					if(!rightFlipper){
+						sim->enableRightFlipper();
+						rightFlipper = true;
+					}
+				}else if(rightFlipper){
+					sim->disableRightFlipper();
+					rightFlipper = false;
+				}
+
 			}
 		}
 

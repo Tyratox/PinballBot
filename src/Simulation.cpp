@@ -29,6 +29,11 @@ const float			BALL_RESTITUTION					= 0.9f;
 const float			FLIPPER_DENSITY						= 0.0001f;
 const float			FLIPPER_FRICTION					= 0.01f;
 const float			FLIPPER_RESTITUTION					= 0.3f;
+const float			FLIPPER_REV_JOINT_LOWER_ANGLE		= 0.0f * b2_pi;
+const float			FLIPPER_REV_JOINT_UPPER_ANGLE		= 0.1f * b2_pi;
+
+const float			FLIPPER_REV_MOTOR_SPEED				= 1.5 * b2_pi; /* rad^-1 */
+const float			FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
 class PinballSimulation{
 	private:
@@ -61,11 +66,15 @@ class PinballSimulation{
 		b2Body*											flipperLeftBody;
 		b2PolygonShape									flipperLeftTriangle;
 		b2FixtureDef									flipperLeftFixtureDef;
+		b2RevoluteJointDef								flipperLeftRevJointDef;
+		b2RevoluteJoint*								flipperLeftRevJoint;
 
 		b2BodyDef										flipperRightDef;
 		b2Body*											flipperRightBody;
 		b2PolygonShape									flipperRightTriangle;
 		b2FixtureDef									flipperRightFixtureDef;
+		b2RevoluteJointDef								flipperRightRevJointDef;
+		b2RevoluteJoint*								flipperRightRevJoint;
 
 	public:
 
@@ -108,17 +117,19 @@ class PinballSimulation{
 			flipperLeftDef.position.Set(WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
 			flipperRightDef.position.Set(FLIPPER_WIDTH-WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
 
+			/* Triangle */
 			b2Vec2 leftFlipperVertices[3];
 			leftFlipperVertices[0].Set(0.0f, 0.0f);
-			leftFlipperVertices[1].Set(0.0f, 0.075f);
-			leftFlipperVertices[2].Set(0.15f, 0.075f);
+			leftFlipperVertices[1].Set(0.0f, 0.05f);
+			leftFlipperVertices[2].Set(0.15f, 0.05f);
 
 			flipperLeftTriangle.Set(leftFlipperVertices, 3);
 
+			/* Triangle */
 			b2Vec2 rightFlipperVertices[3];
 			rightFlipperVertices[0].Set(0.0f, 0.0f);
-			rightFlipperVertices[1].Set(0.0f, 0.075f);
-			rightFlipperVertices[2].Set(-0.15f, 0.075f);
+			rightFlipperVertices[1].Set(0.0f, 0.05f);
+			rightFlipperVertices[2].Set(-0.15f, 0.05f);
 
 			flipperRightTriangle.Set(rightFlipperVertices, 3);
 
@@ -128,16 +139,45 @@ class PinballSimulation{
 			this->flipperLeftFixtureDef.shape			= &this->flipperLeftTriangle;
 			this->flipperRightFixtureDef.shape			= &this->flipperRightTriangle;
 
-			this->flipperLeftFixtureDef.density = this->flipperRightFixtureDef.density = FLIPPER_DENSITY;
-			this->flipperLeftFixtureDef.friction = this->flipperRightFixtureDef.friction = FLIPPER_FRICTION;
-			this->flipperLeftFixtureDef.restitution = this->flipperRightFixtureDef.restitution = FLIPPER_RESTITUTION;
+			this->flipperLeftFixtureDef.density			= this->flipperRightFixtureDef.density = FLIPPER_DENSITY;
+			this->flipperLeftFixtureDef.friction		= this->flipperRightFixtureDef.friction = FLIPPER_FRICTION;
+			this->flipperLeftFixtureDef.restitution		= this->flipperRightFixtureDef.restitution = FLIPPER_RESTITUTION;
 
 			this->flipperLeftBody->CreateFixture(&this->flipperLeftFixtureDef);
 			this->flipperRightBody->CreateFixture(&this->flipperRightFixtureDef);
 
 			/* Connect the flippers to the walls with a joint */
 
-			//TODO
+			flipperLeftRevJointDef.bodyA				= leftWallBody;
+			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
+
+			flipperRightRevJointDef.bodyA				= rightWallBody;
+			flipperRightRevJointDef.bodyB				= flipperRightBody;
+
+			flipperLeftRevJointDef.localAnchorA			= b2Vec2((WALL_THICKNESS/2), 0.0f);
+			flipperLeftRevJointDef.localAnchorB			= b2Vec2(0.0f, 0.0f);
+
+			flipperRightRevJointDef.localAnchorA		= b2Vec2((-WALL_THICKNESS/2), 0.0f);
+			flipperRightRevJointDef.localAnchorB		= b2Vec2(0.0f, 0.0f);
+
+			flipperLeftRevJointDef.collideConnected		= flipperRightRevJointDef.collideConnected		= false;
+
+			flipperLeftRevJointDef.lowerAngle			= -1 * FLIPPER_REV_JOINT_UPPER_ANGLE;
+			flipperLeftRevJointDef.upperAngle			= FLIPPER_REV_JOINT_LOWER_ANGLE;
+
+			flipperRightRevJointDef.lowerAngle			= FLIPPER_REV_JOINT_LOWER_ANGLE;
+			flipperRightRevJointDef.upperAngle			= FLIPPER_REV_JOINT_UPPER_ANGLE;
+
+			flipperLeftRevJointDef.enableLimit			= flipperRightRevJointDef.enableLimit				= true;
+
+			flipperLeftRevJointDef.maxMotorTorque		= flipperRightRevJointDef.maxMotorTorque			= FLIPPER_REV_MOTOR_MAX_TORQUE;
+			flipperLeftRevJointDef.enableMotor			= flipperRightRevJointDef.enableMotor				= false; /* Not enabled by default */
+
+			flipperLeftRevJointDef.motorSpeed 			= -1 * FLIPPER_REV_MOTOR_SPEED;
+			flipperRightRevJointDef.motorSpeed 			= FLIPPER_REV_MOTOR_SPEED;
+
+			flipperLeftRevJoint							= (b2RevoluteJoint*)this->world.CreateJoint(&flipperLeftRevJointDef);
+			flipperRightRevJoint						= (b2RevoluteJoint*)this->world.CreateJoint(&flipperRightRevJointDef);
 
 			/* Init playing ball */
 			ballDef.type								= b2_dynamicBody;
@@ -165,6 +205,20 @@ class PinballSimulation{
 
 		void render(){
 			this->world.DrawDebugData();
+		}
+
+		void enableLeftFlipper(){
+			flipperLeftRevJoint->EnableMotor(true);
+		}
+		void disableLeftFlipper(){
+			flipperLeftRevJoint->EnableMotor(false);
+		}
+
+		void enableRightFlipper(){
+			flipperRightRevJoint->EnableMotor(true);
+		}
+		void disableRightFlipper(){
+			flipperRightRevJoint->EnableMotor(false);
 		}
 
 		void debugPlayingBall(){
