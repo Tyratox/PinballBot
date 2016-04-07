@@ -13,7 +13,7 @@ class State{
 
 	private:
 
-		std::vector<Ball> balls;
+		//Ball* ball; //Pointer to the ball inside the simulation
 
 	public:
 

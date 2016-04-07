@@ -6,13 +6,10 @@
 //============================================================================
 
 #include <iostream>
-#include <chrono>
-#include <thread>
 #include <math.h>
 #include <unistd.h>
 
 #include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/io.hpp>
 
 #include <Box2D/Box2D.h>
 
@@ -33,8 +30,6 @@ const float					TICK_INTERVAL		= 1000.0f / FPS;
 const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
 
 bool						quit				= false;
-bool						leftFlipper			= false;
-bool						rightFlipper		= false;
 
 Renderer					*r;
 SDL_Event					e;
@@ -76,24 +71,17 @@ int main(int argc, char** argv) {
 					quit = true;
 				}
 
+				/* Just for debugging purposes */
 				if (KEYS[SDL_SCANCODE_LEFT]){
-					if(!leftFlipper){
-						sim->enableLeftFlipper();
-						leftFlipper = true;
-					}
-				}else if(leftFlipper){
+					sim->enableLeftFlipper();
+				}else{
 					sim->disableLeftFlipper();
-					leftFlipper = false;
 				}
 
 				if (KEYS[SDL_SCANCODE_RIGHT]){
-					if(!rightFlipper){
-						sim->enableRightFlipper();
-						rightFlipper = true;
-					}
-				}else if(rightFlipper){
+					sim->enableRightFlipper();
+				}else{
 					sim->disableRightFlipper();
-					rightFlipper = false;
 				}
 
 			}

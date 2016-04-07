@@ -14,7 +14,7 @@ const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
 
 const float			GRAVITY_X							= 0;
-const float			GRAVITY_Y							= 5.0f; /*positive, cause we start in the top left corner*/
+const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
 
 const float			FLIPPER_HEIGHT						= 1.0f;
 const float			FLIPPER_WIDTH						= 0.5f;
@@ -35,33 +35,43 @@ const float			FLIPPER_REV_JOINT_UPPER_ANGLE		= 0.1f * b2_pi;
 const float			FLIPPER_REV_MOTOR_SPEED				= 1.5 * b2_pi; /* rad^-1 */
 const float			FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
+/**
+ * Class used to simulate a pinball machine using Box2D
+ */
 class PinballSimulation{
 	private:
+
+		//The Box2D world where all the things take place
 		b2Vec2											gravity;
 		b2World											world;
 
+		//The ceiling
 		b2BodyDef										ceilingBodyDef;
 		b2Body*											ceilingBody;
 		b2PolygonShape									ceilingBox;
 
+		//The floor
 		b2BodyDef										floorBodyDef;
 		b2Body*											floorBody;
 		b2PolygonShape									floorBox;
 
-
+		//The left wall
 		b2BodyDef										leftWallBodyDef;
 		b2Body*											leftWallBody;
 		b2PolygonShape									leftWallBox;
 
+		//The right wall
 		b2BodyDef										rightWallBodyDef;
 		b2Body*											rightWallBody;
 		b2PolygonShape									rightWallBox;
 
+		//The ball used to play the game
 		b2BodyDef										ballDef;
 		b2Body*											ballBody;
 		b2CircleShape									ballSphere;
 		b2FixtureDef									ballFixtureDef;
 
+		//The flipper on the left hand side
 		b2BodyDef										flipperLeftDef;
 		b2Body*											flipperLeftBody;
 		b2PolygonShape									flipperLeftTriangle;
@@ -69,6 +79,7 @@ class PinballSimulation{
 		b2RevoluteJointDef								flipperLeftRevJointDef;
 		b2RevoluteJoint*								flipperLeftRevJoint;
 
+		//The flipper on the right hand side
 		b2BodyDef										flipperRightDef;
 		b2Body*											flipperRightBody;
 		b2PolygonShape									flipperRightTriangle;
@@ -78,17 +89,20 @@ class PinballSimulation{
 
 	public:
 
+		/**
+		 * Inits the world and all of the needed objects
+		 */
 		PinballSimulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
 			/* Initializes a world with gravity pulling downwards */
 
-			/* Sets the position of the 4 boundaries */
+			/* Sets the position of the boundaries. Remember: The origin (0|0) is the top left corner! */
 			this->ceilingBodyDef.position.Set((FLIPPER_WIDTH/2), (WALL_THICKNESS/2));
 			this->floorBodyDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT-(WALL_THICKNESS/2)));
 
 			this->leftWallBodyDef.position.Set((WALL_THICKNESS/2), (FLIPPER_HEIGHT/2));
 			this->rightWallBodyDef.position.Set((FLIPPER_WIDTH - (WALL_THICKNESS/2)),  (FLIPPER_HEIGHT/2));
 
-			/* Adds the 4 boundaries to the world */
+			/* Adds the boundaries to the world */
 			this->ceilingBody 							= world.CreateBody(&this->ceilingBodyDef);
 			this->floorBody 							= world.CreateBody(&this->floorBodyDef);
 
@@ -110,7 +124,6 @@ class PinballSimulation{
 			rightWallBody->CreateFixture(&this->rightWallBox, 0.0f);
 
 			/* Add 2 flippers */
-
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
 
@@ -147,7 +160,6 @@ class PinballSimulation{
 			this->flipperRightBody->CreateFixture(&this->flipperRightFixtureDef);
 
 			/* Connect the flippers to the walls with a joint */
-
 			flipperLeftRevJointDef.bodyA				= leftWallBody;
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
@@ -195,32 +207,67 @@ class PinballSimulation{
 			this->ballBody->CreateFixture(&this->ballFixtureDef);
 		}
 
+		/**
+		 * Steps a specific value forward in time
+		 * @param	time_step	float32		The amount of time to step
+		 * @return	void
+		 */
 		void step(float32 time_step){
 			world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 		}
 
+		/**
+		 * Sets the DebugDraw renderer of the Box2D world
+		 * @param	draw		b2Draw		A pointer to a class implementing the b2Draw functions
+		 * @return	void
+		 */
 		void setRenderer(b2Draw* draw){
 			this->world.SetDebugDraw( draw );
 		}
 
+		/**
+		 * Renders the scene by calling the DrawDebugData function inside the Box2D world,
+		 * which calls back to the initially set b2Draw class
+		 * @return	void
+		 */
 		void render(){
 			this->world.DrawDebugData();
 		}
 
+		/**
+		 * Activates the left hand flipper. Will stay active until disableLeftFlipper() is called
+		 * @return	void
+		 */
 		void enableLeftFlipper(){
 			flipperLeftRevJoint->EnableMotor(true);
 		}
+		/**
+		 * Deactivates the left hand flipper. Gravity will do it's job again
+		 * @return	void
+		 */
 		void disableLeftFlipper(){
 			flipperLeftRevJoint->EnableMotor(false);
 		}
 
+		/**
+		 * Activates the right hand flipper. Will stay active until disableLeftFlipper() is called
+		 * @return	void
+		 */
 		void enableRightFlipper(){
 			flipperRightRevJoint->EnableMotor(true);
 		}
+		/**
+		 * Deactivates the right hand flipper. Gravity will do it's job again
+		 * @return	void
+		 */
 		void disableRightFlipper(){
 			flipperRightRevJoint->EnableMotor(false);
 		}
 
+		/**
+		 * Prints debugging information about the playing ball
+		 * @return	void
+		 */
 		void debugPlayingBall(){
 			b2Vec2 position								= this->ballBody->GetPosition();
 			float32 angle								= this->ballBody->GetAngle();
