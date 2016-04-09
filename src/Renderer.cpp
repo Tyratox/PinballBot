@@ -15,6 +15,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include <iostream>
+#include <vector>
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
@@ -136,8 +137,8 @@ class Renderer : public b2Draw{
 		 * @return	void
 		 */
 		void dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
-			short x[vertexCount];
-			short y[vertexCount];
+			std::vector<short> x(vertexCount);
+			std::vector<short> y(vertexCount);
 
 			for(int i=0;i<vertexCount;i++){
 				b2Vec2 vec = toScreenCoords(vertices[i]);
@@ -147,9 +148,9 @@ class Renderer : public b2Draw{
 			}
 
 			if(filled){
-				filledPolygonRGBA(renderer, x, y, vertexCount, red, green, blue, alpha);
+				filledPolygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
 			}else{
-				polygonRGBA(renderer, x, y, vertexCount, red, green, blue, alpha);
+				polygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
 			}
 		}
 
