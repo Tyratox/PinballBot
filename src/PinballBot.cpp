@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <math.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include <boost/numeric/ublas/vector.hpp>
 
