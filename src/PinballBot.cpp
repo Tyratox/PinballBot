@@ -7,10 +7,6 @@
 
 #include <iostream>
 #include <math.h>
-<<<<<<< HEAD
-=======
-//#include <unistd.h>
->>>>>>> branch 'master' of https://github.com/Tyratox/PinballBot/
 
 #include <boost/numeric/ublas/vector.hpp>
 
