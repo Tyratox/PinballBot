@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <Box2D/Box2D.h>
 
+#include "Ball.cpp"
+#include "State.cpp"
+
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
 
@@ -274,6 +277,14 @@ class PinballSimulation{
 
 			printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
 		}
+
+		State getCurrentState(){
+			return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()));
+		}
+
+		class s{
+
+		};
 
 };
 

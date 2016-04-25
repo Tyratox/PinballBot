@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <math.h>
-#include <unistd.h>
 
 #include <boost/numeric/ublas/vector.hpp>
 
@@ -16,11 +15,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
+#include "action/ActionsSim.cpp"
+
 #include "Ball.cpp"
 #include "State.cpp"
 
 #include "Simulation.cpp"
 #include "Renderer.cpp"
+
+const bool					SIMULATION			= true;
 
 const bool					RENDER				= true;
 const float					FPS					= 60.0f;
@@ -48,11 +51,13 @@ void capFramerate(void) {
 	next_time += TICK_INTERVAL;
 }
 
-int main(int argc, char** argv) {
+void runSimulation(){
 
 	PinballSimulation 		sim;
 	Renderer				r(320, 640);
 	SDL_Event				e;
+
+	std::vector<Action> actions = ActionsSim::actionsAvailable(sim);
 
 	if(RENDER){
 		r.SetFlags( b2Draw::e_shapeBit );
@@ -91,9 +96,19 @@ int main(int argc, char** argv) {
 			sim.render();
 
 			r.redraw();
+			//sim.debugPlayingBall();
+			sim.getCurrentState();
 			capFramerate();
 		}
 	}
+}
+
+int main(int argc, char** argv) {
+
+	if(SIMULATION){
+		runSimulation();
+	}
+
 
 	return 0;
 }
