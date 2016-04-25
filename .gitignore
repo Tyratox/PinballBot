@@ -365,3 +365,4 @@ paket-files/
 *.sln
 PinballBot/PinballBot.vcxproj
 *.filters
+*.vcxproj
