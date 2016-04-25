@@ -31,9 +31,6 @@ const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
 
 bool						quit				= false;
 
-Renderer					*r;
-SDL_Event					e;
-
 static Uint32				next_time			= 0;
 
 Uint32 timeLeft(void) {
@@ -53,13 +50,14 @@ void capFramerate(void) {
 
 int main(int argc, char** argv) {
 
-	PinballSimulation *sim = new PinballSimulation();
+	PinballSimulation 		sim;
+	Renderer				r(320, 640);
+	SDL_Event				e;
 
 	if(RENDER){
-		r = new Renderer(320, 640);
-		r->SetFlags( b2Draw::e_shapeBit );
+		r.SetFlags( b2Draw::e_shapeBit );
 
-		sim->setRenderer(r);
+		sim.setRenderer(&r);
 	}
 
 	while(!quit){
@@ -73,26 +71,26 @@ int main(int argc, char** argv) {
 
 				/* Just for debugging purposes */
 				if (KEYS[SDL_SCANCODE_LEFT]){
-					sim->enableLeftFlipper();
+					sim.enableLeftFlipper();
 				}else{
-					sim->disableLeftFlipper();
+					sim.disableLeftFlipper();
 				}
 
 				if (KEYS[SDL_SCANCODE_RIGHT]){
-					sim->enableRightFlipper();
+					sim.enableRightFlipper();
 				}else{
-					sim->disableRightFlipper();
+					sim.disableRightFlipper();
 				}
 
 			}
 		}
 
-		sim->step(TIME_STEP);
+		sim.step(TIME_STEP);
 
 		if(RENDER){
-			sim->render();
+			sim.render();
 
-			r->redraw();
+			r.redraw();
 			capFramerate();
 		}
 	}

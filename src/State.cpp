@@ -17,14 +17,14 @@ class State{
 
 	private:
 
-		//Ball* ball; //Pointer to the ball inside the simulation
+		Ball ball;
 
 		/**
 		 * Generates a seed.
 		 * @return	void
 		 */
 		static unsigned int seed(){
-			return (unsigned int) rand();//FIXME not a good solution, but works for now.
+			return (unsigned int) rand();//FIXME not the best solution but works for now.
 		}
 
 		/**
@@ -33,7 +33,7 @@ class State{
 		 * @param	max		float		The maximum possible number to generate [included]
 		 * @return			float		The pseudo random number
 		 */
-		static float randomFloatInRange(float min, float max){
+		static float randomFloatInRange(const float &min, const float &max){
 			std::default_random_engine					generator(seed());
 
 			std::uniform_real_distribution<float>		distribution
@@ -48,7 +48,7 @@ class State{
 		 * @param	max		int			The maximum possible number to generate [included]
 		 * @return			int			The pseudo random number
 		 */
-		static int randomIntInRange(int min, int max){
+		static int randomIntInRange(const int &min, const int &max){
 			std::default_random_engine					generator(seed());
 
 			std::uniform_int_distribution<int>		distribution
@@ -93,10 +93,10 @@ class State{
 		/**
 		 * Returns one state inside of a vector based on a epsilon greedy algorithm
 		 * @param	states		std::vector<State>		A vector containing all the possible states
-		 * @param	epsilon		float					Range: [0-1]: The percentage of time, which this function should pick a random state
+		 * @param	epsilon		float					Range: [0-1]: The percentage of time which this function should pick a random state
 		 * @return				State					The picked state
 		 */
-		static State epsilonGreedy(std::vector<State> states, float epsilon){
+		static State epsilonGreedy(std::vector<State> states, const float &epsilon){
 			if(epsilon < randomFloatInRange(0.0f, 1.0f)){
 				//pick a greedy state
 				return greedy(states);
@@ -140,7 +140,7 @@ class State{
 		 * @param	states		std::vector<State>		A vector containing all the possible states
 		 * @return				State					The picked state
 		 */
-		static State random(std::vector<State> states){
+		static State random(const std::vector<State> &states){
 			return states[randomIntInRange(0, states.size()-1)];
 		}
 

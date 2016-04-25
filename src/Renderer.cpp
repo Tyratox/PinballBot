@@ -51,7 +51,7 @@ class Renderer : public b2Draw{
 		 * @param	meters		float		The amount of meters to convert
 		 * @return				int			The rounded amount of corresponding screen pixels
 		 */
-		int metersToPixels(float meters){
+		int metersToPixels(const float &meters){
 			return round(meters * oneMeterInPX);
 		}
 
@@ -60,7 +60,7 @@ class Renderer : public b2Draw{
 		 * @param	position	b2Vec2		The Box2D vector to convert
 		 * @return				b2vec2		The converted Box2D vector
 		 */
-		b2Vec2 toScreenCoords(b2Vec2 position){
+		b2Vec2 toScreenCoords(const b2Vec2 &position){
 			return b2Vec2 (
 					round(width * PADDING_PERCENT) + metersToPixels(position.x),
 					round(height * PADDING_PERCENT) + metersToPixels(position.y)

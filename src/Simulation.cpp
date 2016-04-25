@@ -212,7 +212,7 @@ class PinballSimulation{
 		 * @param	time_step	float32		The amount of time to step
 		 * @return	void
 		 */
-		void step(float32 time_step){
+		void step(const float32 &time_step){
 			world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 		}
 
