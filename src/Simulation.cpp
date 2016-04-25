@@ -32,10 +32,10 @@ const float			BALL_RESTITUTION					= 0.9f;
 const float			FLIPPER_DENSITY						= 0.0001f;
 const float			FLIPPER_FRICTION					= 0.01f;
 const float			FLIPPER_RESTITUTION					= 0.3f;
-const float			FLIPPER_REV_JOINT_LOWER_ANGLE		= 0.0f * b2_pi;
-const float			FLIPPER_REV_JOINT_UPPER_ANGLE		= 0.1f * b2_pi;
+const float			FLIPPER_REV_JOINT_LOWER_ANGLE		= (float) 0.0f * b2_pi;
+const float			FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.1f * b2_pi;
 
-const float			FLIPPER_REV_MOTOR_SPEED				= 1.5 * b2_pi; /* rad^-1 */
+const float			FLIPPER_REV_MOTOR_SPEED				= (float) 1.5 * b2_pi; /* rad^-1 */
 const float			FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
 /**

@@ -94,7 +94,7 @@ class Renderer : public b2Draw{
 			//updates the width and height if there's a high DPI and calc other vars afterwards
 			SDL_GL_GetDrawableSize(window, &width, &height);
 
-			oneMeterInPX = SCALING * height; /* one meter is equal to half of the width of the window */
+			oneMeterInPX = round(SCALING * height); /* one meter is equal to half of the width of the window */
 
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
@@ -143,8 +143,8 @@ class Renderer : public b2Draw{
 			for(int i=0;i<vertexCount;i++){
 				b2Vec2 vec = toScreenCoords(vertices[i]);
 
-				x[i] = vec.x;
-				y[i] = vec.y;
+				x[i] = (short) vec.x;
+				y[i] = (short) vec.y;
 			}
 
 			if(filled){
@@ -169,9 +169,9 @@ class Renderer : public b2Draw{
 			b2Vec2 coords = toScreenCoords(center);
 
 			if(filled){
-				filledCircleRGBA(renderer, coords.x, coords.y, metersToPixels(radius), red, green, blue, alpha);
+				filledCircleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
 			}else{
-				circleRGBA(renderer, coords.x, coords.y, metersToPixels(radius), red, green, blue, alpha);
+				circleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
 			}
 		}
 
@@ -193,7 +193,7 @@ class Renderer : public b2Draw{
 			}
 
 			void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-				lineRGBA(renderer, p1.x, p1.y, p2.x, p2.y, 0, 0, 0, 255);
+				lineRGBA(renderer, (Sint16) p1.x, (Sint16) p1.y, (Sint16) p2.x, (Sint16) p2.y, 0, 0, 0, 255);
 			}
 			void DrawTransform(const b2Transform& xf) {
 

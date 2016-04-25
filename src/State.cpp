@@ -147,9 +147,10 @@ class State{
 		 * @return				State					The picked state
 		 */
 		static State greedy(std::vector<State> states){
-			int					maxValue = 0;
+			float				maxValue = 0;
 			float				tmpValue;
 			std::vector<State>	maxStates;
+
 			for(int i=1;i<states.size();i++){
 				tmpValue		= states[i].getValue();
 

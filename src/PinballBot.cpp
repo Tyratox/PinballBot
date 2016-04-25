@@ -6,19 +6,11 @@
 //============================================================================
 
 #include <iostream>
-#include <math.h>
-
-#include <boost/numeric/ublas/vector.hpp>
-
-#include <Box2D/Box2D.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
 #include "action/ActionsSim.cpp"
-
-#include "Ball.cpp"
-#include "State.cpp"
 
 #include "Simulation.cpp"
 #include "Renderer.cpp"
@@ -97,7 +89,7 @@ void runSimulation(){
 
 			r.redraw();
 			//sim.debugPlayingBall();
-			sim.getCurrentState();
+			//sim.getCurrentState();
 			capFramerate();
 		}
 	}
