@@ -10,11 +10,14 @@
 #include <stdio.h>
 #include <Box2D/Box2D.h>
 
+#include <cmath>
+
 #include "../agent/Ball.cpp"
 #include "../agent/State.cpp"
 
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
+const int32			PLAYINGFIELD_VERTEX_NUMBER			= 10;
 
 const float			GRAVITY_X							= 0;
 const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
@@ -48,25 +51,10 @@ class PinballSimulation{
 		b2Vec2											gravity;
 		b2World											world;
 
-		//The ceiling
-		b2BodyDef										ceilingBodyDef;
-		b2Body*											ceilingBody;
-		b2PolygonShape									ceilingBox;
-
-		//The floor
-		b2BodyDef										floorBodyDef;
-		b2Body*											floorBody;
-		b2PolygonShape									floorBox;
-
-		//The left wall
-		b2BodyDef										leftWallBodyDef;
-		b2Body*											leftWallBody;
-		b2PolygonShape									leftWallBox;
-
-		//The right wall
-		b2BodyDef										rightWallBodyDef;
-		b2Body*											rightWallBody;
-		b2PolygonShape									rightWallBox;
+		//The playing field
+		b2BodyDef										playingFieldDef[PLAYINGFIELD_VERTEX_NUMBER];
+		b2Body*											playingFieldBody[PLAYINGFIELD_VERTEX_NUMBER];
+		b2EdgeShape										playingFieldEdge[PLAYINGFIELD_VERTEX_NUMBER];
 
 		//The ball used to play the game
 		b2BodyDef										ballDef;
@@ -98,34 +86,22 @@ class PinballSimulation{
 		PinballSimulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
 			/* Initializes a world with gravity pulling downwards */
 
-			/* Sets the position of the boundaries. Remember: The origin (0|0) is the top left corner! */
-			this->ceilingBodyDef.position.Set((FLIPPER_WIDTH/2), (WALL_THICKNESS/2));
-			this->floorBodyDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT-(WALL_THICKNESS/2)));
+			/* Remember: The origin (0|0) is the top left corner! */
 
-			this->leftWallBodyDef.position.Set((WALL_THICKNESS/2), (FLIPPER_HEIGHT/2));
-			this->rightWallBodyDef.position.Set((FLIPPER_WIDTH - (WALL_THICKNESS/2)),  (FLIPPER_HEIGHT/2));
-
-			/* Adds the boundaries to the world */
-			this->ceilingBody 							= world.CreateBody(&this->ceilingBodyDef);
-			this->floorBody 							= world.CreateBody(&this->floorBodyDef);
-
-			this->leftWallBody 							= world.CreateBody(&this->leftWallBodyDef);
-			this->rightWallBody 						= world.CreateBody(&this->rightWallBodyDef);
-
-			/* Define the box size of the boundaries, the entered values are half the size in the world */
-			this->ceilingBox.SetAsBox(FLIPPER_WIDTH/2, WALL_THICKNESS/2);
-			this->floorBox.SetAsBox(FLIPPER_WIDTH/2, WALL_THICKNESS/2);
-
-			this->leftWallBox.SetAsBox(WALL_THICKNESS/2, FLIPPER_HEIGHT/2);
-			this->rightWallBox.SetAsBox(WALL_THICKNESS/2, FLIPPER_HEIGHT/2);
-
-			/* Creates fixtures for the boundaries, set the density to 0 because they're static anyway */
-			ceilingBody->CreateFixture(&this->ceilingBox, 0.0f);
-			floorBody->CreateFixture(&this->floorBox, 0.0f);
-
-			leftWallBody->CreateFixture(&this->leftWallBox, 0.0f);
-			rightWallBody->CreateFixture(&this->rightWallBox, 0.0f);
-
+			/* Define edge shape of the playing field */
+			b2Vec2 playingFieldVertices[PLAYINGFIELD_VERTEX_NUMBER];
+			playingFieldVertices[0].Set(0, FLIPPER_HEIGHT / 8);
+			playingFieldVertices[1].Set((std::sin(b2_pi/20)*FLIPPER_HEIGHT/8), (FLIPPER_HEIGHT / 8) - (std::cos(b2_pi/20)*FLIPPER_HEIGHT / 8) );
+			playingFieldVertices[2].Set((std::sin(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[3].Set((std::sin(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[4].Set((std::sin(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[5].Set((std::sin(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[6].Set((std::sin(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[7].Set((std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[8].Set((std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[9].Set((std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			drawPlayingField(playingFieldVertices);
+			
 			/* Add 2 flippers */
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
@@ -163,10 +139,10 @@ class PinballSimulation{
 			this->flipperRightBody->CreateFixture(&this->flipperRightFixtureDef);
 
 			/* Connect the flippers to the walls with a joint */
-			flipperLeftRevJointDef.bodyA				= leftWallBody;
+			flipperLeftRevJointDef.bodyA				= playingFieldBody[0];
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
-			flipperRightRevJointDef.bodyA				= rightWallBody;
+			flipperRightRevJointDef.bodyA				= playingFieldBody[0];
 			flipperRightRevJointDef.bodyB				= flipperRightBody;
 
 			flipperLeftRevJointDef.localAnchorA			= b2Vec2((WALL_THICKNESS/2), 0.0f);
@@ -186,7 +162,7 @@ class PinballSimulation{
 			flipperLeftRevJointDef.enableLimit			= flipperRightRevJointDef.enableLimit				= true;
 
 			flipperLeftRevJointDef.maxMotorTorque		= flipperRightRevJointDef.maxMotorTorque			= FLIPPER_REV_MOTOR_MAX_TORQUE;
-			flipperLeftRevJointDef.enableMotor			= flipperRightRevJointDef.enableMotor				= false; /* Not enabled by default */
+			flipperLeftRevJointDef.enableMotor			= flipperRightRevJointDef.enableMotor				= false; // Not enabled by default
 
 			flipperLeftRevJointDef.motorSpeed 			= -1 * FLIPPER_REV_MOTOR_SPEED;
 			flipperRightRevJointDef.motorSpeed 			= FLIPPER_REV_MOTOR_SPEED;
@@ -208,6 +184,21 @@ class PinballSimulation{
 			this->ballFixtureDef.restitution			= BALL_RESTITUTION;
 
 			this->ballBody->CreateFixture(&this->ballFixtureDef);
+		}
+
+		void drawPlayingField(const b2Vec2* points){
+			for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER;i++){
+
+				playingFieldDef[i].type			=	b2_staticBody;
+				playingFieldDef[i].position.Set(0, 0);
+
+				playingFieldEdge[i].Set(points[i], points[i+1]);
+
+				playingFieldBody[i]				= world.CreateBody(&playingFieldDef[i]);
+
+				playingFieldBody[i]->CreateFixture(&playingFieldEdge[i], 0.0f);
+
+			}
 		}
 
 		/**
@@ -279,7 +270,7 @@ class PinballSimulation{
 		}
 
 		State getCurrentState(){
-			return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()));
+			return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()), flipperLeftRevJoint->IsMotorEnabled(), flipperRightRevJoint->IsMotorEnabled());
 		}
 
 		class s{

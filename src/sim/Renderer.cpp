@@ -193,10 +193,12 @@ class Renderer : public b2Draw{
 			}
 
 			void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-				lineRGBA(renderer, (Sint16) p1.x, (Sint16) p1.y, (Sint16) p2.x, (Sint16) p2.y, 0, 0, 0, 255);
+				b2Vec2 from = toScreenCoords(p1);
+				b2Vec2 to = toScreenCoords(p2);
+
+				lineRGBA(renderer, (Sint16) from.x, (Sint16) from.y, (Sint16) to.x, (Sint16) to.y, 0, 0, 0, 255);
 			}
 			void DrawTransform(const b2Transform& xf) {
-
 			}
 
 };
