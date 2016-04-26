@@ -187,7 +187,7 @@ class PinballSimulation{
 		}
 
 		void drawPlayingField(const b2Vec2* points){
-			for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER;i++){
+			for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER-1;i++){
 
 				playingFieldDef[i].type			=	b2_staticBody;
 				playingFieldDef[i].position.Set(0, 0);
