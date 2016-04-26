@@ -78,8 +78,8 @@ class Renderer : public b2Draw{
 
 			window = SDL_CreateWindow(
 				"PinballBot",						// window title
-				0,									// initial x position
-				0,									// initial y position
+				SDL_WINDOWPOS_CENTERED,				// initial x position
+				SDL_WINDOWPOS_CENTERED,				// initial y position
 				this->width,						// width, in pixels
 				this->height,						// height, in pixels
 				SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
