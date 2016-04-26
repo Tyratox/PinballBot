@@ -36,7 +36,7 @@ class Renderer : public b2Draw{
 		const float DENOMINATOR			= 9.0f;
 
 		const float SCALING				= NUMERATOR / DENOMINATOR;
-		const float PADDING_PERCENT		= (DENOMINATOR - NUMERATOR) / DENOMINATOR;
+		const float PADDING_PERCENT		= (DENOMINATOR - NUMERATOR) / DENOMINATOR / 2;
 
 		int		width;
 		int		height;
@@ -92,9 +92,9 @@ class Renderer : public b2Draw{
 			}
 
 			//updates the width and height if there's a high DPI and calc other vars afterwards
-			SDL_GL_GetDrawableSize(window, &width, &height);
+			SDL_GL_GetDrawableSize(window, &this->width, &this->height);
 
-			oneMeterInPX = round(SCALING * height); /* one meter is equal to half of the width of the window */
+			oneMeterInPX = round(SCALING * this->height); /* one meter is equal to half of the width of the window */
 
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
