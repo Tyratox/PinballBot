@@ -52,9 +52,9 @@ class PinballSimulation{
 		b2World											world;
 
 		//The playing field
-		b2BodyDef										playingFieldDef;
-		b2Body*											playingFieldBody;
-		b2PolygonShape									playingFieldPolygon;
+		b2BodyDef										playingFieldDef[PLAYINGFIELD_VERTEX_NUMBER];
+		b2Body*											playingFieldBody[PLAYINGFIELD_VERTEX_NUMBER];
+		b2EdgeShape										playingFieldEdge[PLAYINGFIELD_VERTEX_NUMBER];
 
 		//The ball used to play the game
 		b2BodyDef										ballDef;
@@ -86,10 +86,9 @@ class PinballSimulation{
 		PinballSimulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
 			/* Initializes a world with gravity pulling downwards */
 
-			/* Sets the position of the boundaries. Remember: The origin (0|0) is the top left corner! */
-			this->playingFieldDef.position.Set((WALL_THICKNESS/2), (WALL_THICKNESS/2));
+			/* Remember: The origin (0|0) is the top left corner! */
 
-			/* Define polygon shape of the playing field */
+			/* Define edge shape of the playing field */
 			b2Vec2 playingFieldVertices[PLAYINGFIELD_VERTEX_NUMBER];
 			playingFieldVertices[0].Set(0, FLIPPER_HEIGHT / 8);
 			playingFieldVertices[1].Set((std::sin(b2_pi/20)*FLIPPER_HEIGHT/8), (FLIPPER_HEIGHT / 8) - (std::cos(b2_pi/20)*FLIPPER_HEIGHT / 8) );
@@ -101,18 +100,8 @@ class PinballSimulation{
 			playingFieldVertices[7].Set((std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[8].Set((std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[9].Set((std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-
-			playingFieldPolygon.Set(playingFieldVertices, PLAYINGFIELD_VERTEX_NUMBER);
-
-			/* Adds the boundaries to the world */
-			this->playingFieldBody 						= world.CreateBody(&this->playingFieldDef);
+			drawPlayingField(playingFieldVertices);
 			
-			playingFieldDef
-			
-
-			/* Creates fixtures for the boundaries, set the density to 0 because they're static anyway */
-			playingFieldBody->CreateFixture(&this->playingFieldPolygon, 0.0f);
-
 			/* Add 2 flippers */
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
@@ -150,10 +139,10 @@ class PinballSimulation{
 			this->flipperRightBody->CreateFixture(&this->flipperRightFixtureDef);
 
 			/* Connect the flippers to the walls with a joint */
-			flipperLeftRevJointDef.bodyA				= playingFieldBody;
+			flipperLeftRevJointDef.bodyA				= playingFieldBody[0];
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
-			flipperRightRevJointDef.bodyA				= playingFieldBody;
+			flipperRightRevJointDef.bodyA				= playingFieldBody[0];
 			flipperRightRevJointDef.bodyB				= flipperRightBody;
 
 			flipperLeftRevJointDef.localAnchorA			= b2Vec2((WALL_THICKNESS/2), 0.0f);
@@ -173,7 +162,7 @@ class PinballSimulation{
 			flipperLeftRevJointDef.enableLimit			= flipperRightRevJointDef.enableLimit				= true;
 
 			flipperLeftRevJointDef.maxMotorTorque		= flipperRightRevJointDef.maxMotorTorque			= FLIPPER_REV_MOTOR_MAX_TORQUE;
-			flipperLeftRevJointDef.enableMotor			= flipperRightRevJointDef.enableMotor				= false; /* Not enabled by default */
+			flipperLeftRevJointDef.enableMotor			= flipperRightRevJointDef.enableMotor				= false; // Not enabled by default
 
 			flipperLeftRevJointDef.motorSpeed 			= -1 * FLIPPER_REV_MOTOR_SPEED;
 			flipperRightRevJointDef.motorSpeed 			= FLIPPER_REV_MOTOR_SPEED;
@@ -195,6 +184,21 @@ class PinballSimulation{
 			this->ballFixtureDef.restitution			= BALL_RESTITUTION;
 
 			this->ballBody->CreateFixture(&this->ballFixtureDef);
+		}
+
+		void drawPlayingField(const b2Vec2* points){
+			for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER;i++){
+
+				playingFieldDef[i].type			=	b2_staticBody;
+				playingFieldDef[i].position.Set(0, 0);
+
+				playingFieldEdge[i].Set(points[i], points[i+1]);
+
+				playingFieldBody[i]				= world.CreateBody(&playingFieldDef[i]);
+
+				playingFieldBody[i]->CreateFixture(&playingFieldEdge[i], 0.0f);
+
+			}
 		}
 
 		/**
@@ -266,7 +270,7 @@ class PinballSimulation{
 		}
 
 		State getCurrentState(){
-			return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()));
+			return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()), flipperLeftRevJoint->IsMotorEnabled(), flipperRightRevJoint->IsMotorEnabled());
 		}
 
 		class s{
