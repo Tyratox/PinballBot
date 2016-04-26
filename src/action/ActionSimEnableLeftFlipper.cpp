@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "Action.cpp"
-#include "../Simulation.cpp"
+#include "../sim/Simulation.cpp"
 
 class ActionSimEnableLeftFlipper : public Action{
 

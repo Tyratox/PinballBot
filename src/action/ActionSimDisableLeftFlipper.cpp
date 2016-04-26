@@ -9,7 +9,7 @@
 #define PINBALL_BOT_ACTION_SIM_DISABLE_LEFT_FLIPPER
 
 #include "Action.cpp"
-#include "../Simulation.cpp"
+#include "../sim/Simulation.cpp"
 
 class ActionSimDisableLeftFlipper : public Action{
 

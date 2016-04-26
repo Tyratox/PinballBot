@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <Box2D/Box2D.h>
 
-#include "Ball.cpp"
-#include "State.cpp"
+#include "../agent/Ball.cpp"
+#include "../agent/State.cpp"
 
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;

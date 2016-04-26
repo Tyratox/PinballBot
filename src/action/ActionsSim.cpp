@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 
+#include "../sim/Simulation.cpp";
+
 #include "Action.cpp"
 #include "ActionSimEnableLeftFlipper.cpp"
 #include "ActionSimDisableLeftFlipper.cpp"
