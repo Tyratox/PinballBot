@@ -13,11 +13,11 @@
 
 class ActionSimEnableRightFlipper : public Action{
 
-	PinballSimulation &sim;
+	Simulation &sim;
 
 	private:
 	public:
-	ActionSimEnableRightFlipper(PinballSimulation &sim) : sim(sim){
+	ActionSimEnableRightFlipper(Simulation &sim) : sim(sim){
 
 		}
 

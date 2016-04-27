@@ -13,11 +13,11 @@
 
 class ActionSimDisableLeftFlipper : public Action{
 
-	PinballSimulation &sim;
+	Simulation &sim;
 
 	private:
 	public:
-		ActionSimDisableLeftFlipper(PinballSimulation &sim) : sim(sim){
+		ActionSimDisableLeftFlipper(Simulation &sim) : sim(sim){
 
 		}
 

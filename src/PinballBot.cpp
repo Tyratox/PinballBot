@@ -45,7 +45,7 @@ void capFramerate(void) {
 
 void runSimulation(){
 
-	PinballSimulation 		sim;
+	Simulation 		sim;
 	Renderer				r(320, 640);
 	SDL_Event				e;
 

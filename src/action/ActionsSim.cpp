@@ -18,7 +18,7 @@
 class ActionsSim{
 	private:
 	public:
-		static std::vector<Action> actionsAvailable(PinballSimulation &sim){
+		static std::vector<Action> actionsAvailable(Simulation &sim){
 
 			std::vector<Action> vec(4);
 

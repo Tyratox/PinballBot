@@ -17,7 +17,7 @@
 
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
-const int32			PLAYINGFIELD_VERTEX_NUMBER			= 10;
+const int32			PLAYINGFIELD_VERTEX_NUMBER			= 17;
 
 const float			GRAVITY_X							= 0;
 const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
@@ -44,7 +44,7 @@ const float			FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 /**
  * Class used to simulate a pinball machine using Box2D
  */
-class PinballSimulation{
+class Simulation{
 	private:
 
 		//The Box2D world where all the things take place
@@ -70,7 +70,7 @@ class PinballSimulation{
 		/**
 		 * Inits the world and all of the needed objects
 		 */
-		PinballSimulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
+		Simulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
 			/* Initializes a world with gravity pulling downwards */
 
 			/* Remember: The origin (0|0) is the top left corner! */
@@ -87,7 +87,14 @@ class PinballSimulation{
 			playingFieldVertices[7].Set((FLIPPER_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[8].Set((FLIPPER_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[9].Set((FLIPPER_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			
+			playingFieldVertices[10].Set(0						, 6 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[11].Set(FLIPPER_HEIGHT / 8		, 7 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[12].Set(FLIPPER_HEIGHT / 8		, FLIPPER_HEIGHT);
+			playingFieldVertices[13].Set(3 * FLIPPER_HEIGHT / 8	, FLIPPER_HEIGHT);
+			playingFieldVertices[14].Set(3 * FLIPPER_HEIGHT / 8	, 7 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[15].Set(4 * FLIPPER_HEIGHT / 8	, 6 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[16].Set(4 * FLIPPER_HEIGHT / 8, 1 * FLIPPER_HEIGHT / 8);
+
 
 			drawPlayingField(playingFieldVertices);
 			
