@@ -15,6 +15,9 @@
 #include "../agent/Ball.cpp"
 #include "../agent/State.cpp"
 
+#include "ContactListener.cpp"
+#include "UserData.cpp"
+
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
 const int32			PLAYINGFIELD_VERTEX_NUMBER			= 17;
@@ -47,6 +50,8 @@ const float			FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 class Simulation{
 	private:
 
+		ContactListener									contactListener;
+
 		//The Box2D world where all the things take place
 		b2Vec2											gravity;
 		b2World											world;
@@ -65,13 +70,23 @@ class Simulation{
 		b2Body*											flipperRightBody;
 		b2RevoluteJoint*								flipperRightRevJoint;
 
+		UserData										borderData;
+		UserData										ballData;
+		UserData										flipperData;
+
 	public:
 
 		/**
 		 * Inits the world and all of the needed objects
 		 */
-		Simulation() : gravity(GRAVITY_X, GRAVITY_Y), world(this->gravity){
-			/* Initializes a world with gravity pulling downwards */
+		Simulation() : gravity(GRAVITY_X, GRAVITY_Y),
+			world(this->gravity),
+			borderData(UserData::PINBALL_BORDER),
+			ballData(UserData::PINBALL_BALL),
+			flipperData(UserData::PINBALL_FLIPPER){
+
+			/* Initializes a world with gravity pulling downwards and add contact listener */
+			world.SetContactListener(&contactListener);
 
 			/* Remember: The origin (0|0) is the top left corner! */
 
@@ -110,6 +125,9 @@ class Simulation{
 
 			flipperLeftBody								= world.CreateBody(&flipperLeftDef);
 			flipperRightBody							= world.CreateBody(&flipperRightDef);
+
+			flipperLeftBody->SetUserData(&flipperData);
+			flipperRightBody->SetUserData(&flipperData);
 
 			b2FixtureDef								flipperLeftFixtureDef;
 			b2FixtureDef								flipperRightFixtureDef;
@@ -184,6 +202,8 @@ class Simulation{
 			ballDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT/2));
 			ballBody									= world.CreateBody(&ballDef);
 
+			ballBody->SetUserData(&ballData);
+
 			b2CircleShape								ballSphere;
 			ballSphere.m_p.Set(0.0f, 0.0f);
 			ballSphere.m_radius							= BALL_RADIUS;
@@ -208,6 +228,8 @@ class Simulation{
 				def.position.Set(0, 0);
 
 				playingFieldBody[i]				= world.CreateBody(&def);
+
+				playingFieldBody[i]->SetUserData(&borderData);
 
 				/*
 				 * Factories do not retain references to the definitions.
