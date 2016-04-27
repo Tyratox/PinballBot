@@ -150,7 +150,7 @@ class Simulation{
 			b2Vec2 leftFlipperVertices[3];
 			leftFlipperVertices[0].Set(0.0f, 0.0f);
 			leftFlipperVertices[1].Set(0.0f, 0.05f);
-			leftFlipperVertices[2].Set(0.075f, 0.05f);
+			leftFlipperVertices[2].Set(0.075f, 0.01f);
 
 			flipperLeftTriangle.Set(leftFlipperVertices, 3);
 
@@ -158,7 +158,7 @@ class Simulation{
 			b2Vec2 rightFlipperVertices[3];
 			rightFlipperVertices[0].Set(0.0f, 0.0f);
 			rightFlipperVertices[1].Set(0.0f, 0.05f);
-			rightFlipperVertices[2].Set(-0.075f, 0.05f);
+			rightFlipperVertices[2].Set(-0.075f, 0.01f);
 
 			flipperRightTriangle.Set(rightFlipperVertices, 3);
 
@@ -210,7 +210,7 @@ class Simulation{
 			/* Init playing ball */
 			b2BodyDef									ballDef;
 			ballDef.type								= b2_dynamicBody;
-			ballDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT/2));
+			ballDef.position.Set(1.5*(FLIPPER_WIDTH/2), (FLIPPER_HEIGHT/2));
 			ballBody									= world.CreateBody(&ballDef);
 
 			ballBody->SetUserData(&ballData);
