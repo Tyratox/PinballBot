@@ -28,8 +28,6 @@ const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top lef
 const float			FLIPPER_HEIGHT						= 1.0f;
 const float			FLIPPER_WIDTH						= 0.5f;
 
-const float			WALL_THICKNESS						= 0.05f;
-
 const float			BALL_RADIUS							= 0.025f;
 const float			BALL_DENSITY						= 0.0001f;
 const float			BALL_FRICTION						= 0.01f;
@@ -133,8 +131,8 @@ class Simulation{
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
 
-			flipperLeftDef.position.Set(WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
-			flipperRightDef.position.Set(FLIPPER_WIDTH-WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
+			flipperLeftDef.position.Set((FLIPPER_HEIGHT/8), (7*FLIPPER_HEIGHT/8));
+			flipperRightDef.position.Set((3*FLIPPER_HEIGHT/8), (7*FLIPPER_HEIGHT/8));
 
 			flipperLeftBody								= world.CreateBody(&flipperLeftDef);
 			flipperRightBody							= world.CreateBody(&flipperRightDef);
@@ -152,7 +150,7 @@ class Simulation{
 			b2Vec2 leftFlipperVertices[3];
 			leftFlipperVertices[0].Set(0.0f, 0.0f);
 			leftFlipperVertices[1].Set(0.0f, 0.05f);
-			leftFlipperVertices[2].Set(0.15f, 0.05f);
+			leftFlipperVertices[2].Set(0.075f, 0.05f);
 
 			flipperLeftTriangle.Set(leftFlipperVertices, 3);
 
@@ -160,7 +158,7 @@ class Simulation{
 			b2Vec2 rightFlipperVertices[3];
 			rightFlipperVertices[0].Set(0.0f, 0.0f);
 			rightFlipperVertices[1].Set(0.0f, 0.05f);
-			rightFlipperVertices[2].Set(-0.15f, 0.05f);
+			rightFlipperVertices[2].Set(-0.075f, 0.05f);
 
 			flipperRightTriangle.Set(rightFlipperVertices, 3);
 
@@ -178,19 +176,19 @@ class Simulation{
 			b2RevoluteJointDef							flipperLeftRevJointDef;
 			b2RevoluteJointDef							flipperRightRevJointDef;
 
-			flipperLeftRevJointDef.bodyA				= playingFieldBody[12];
+			flipperLeftRevJointDef.bodyA				= playingFieldBody[11];
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
 			flipperRightRevJointDef.bodyA				= playingFieldBody[14];
 			flipperRightRevJointDef.bodyB				= flipperRightBody;
 
-			flipperLeftRevJointDef.localAnchorA			= b2Vec2((WALL_THICKNESS/2), 0.0f);
+			flipperLeftRevJointDef.localAnchorA			= b2Vec2(0.0f, 0.0f);
 			flipperLeftRevJointDef.localAnchorB			= b2Vec2(0.0f, 0.0f);
 
-			flipperRightRevJointDef.localAnchorA		= b2Vec2((-WALL_THICKNESS/2), 0.0f);
+			flipperRightRevJointDef.localAnchorA		= b2Vec2(0.0f, 0.0f);
 			flipperRightRevJointDef.localAnchorB		= b2Vec2(0.0f, 0.0f);
 
-			flipperLeftRevJointDef.collideConnected		= flipperRightRevJointDef.collideConnected		= false;
+			flipperLeftRevJointDef.collideConnected		= flipperRightRevJointDef.collideConnected			= false;
 
 			flipperLeftRevJointDef.lowerAngle			= -1 * FLIPPER_REV_JOINT_UPPER_ANGLE;
 			flipperLeftRevJointDef.upperAngle			= FLIPPER_REV_JOINT_LOWER_ANGLE;
@@ -238,7 +236,7 @@ class Simulation{
 				 */
 				b2BodyDef	def;
 				def.type					=	b2_staticBody;
-				def.position.Set(0, 0);
+				def.position.Set(points[i].x, points[i].y);
 
 				playingFieldBody[i]				= world.CreateBody(&def);
 
@@ -249,7 +247,7 @@ class Simulation{
 				 * So you can create definitions on the stack and keep them in temporary resources.
 				 */
 				b2EdgeShape edge;
-				edge.Set(points[i], points[i+1]);
+				edge.Set(b2Vec2(0.0f, 0.0f), points[i+1]-points[i]);
 
 				playingFieldBody[i]->CreateFixture(&edge, 0.0f);
 
