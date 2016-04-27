@@ -25,14 +25,19 @@ const int32			PLAYINGFIELD_VERTEX_NUMBER			= 28;
 const float			GRAVITY_X							= 0;
 const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
 
-const float			FLIPPER_HEIGHT						= 1.0f;
-const float			FLIPPER_WIDTH						= 0.5f;
+const float			FIELD_WIDTH							= 0.5f;
+const float			FIELD_HEIGHT						= 1.0f;
+
+const float			GAME_OVER_HEIGHT					= 0.01f;
+const float			GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
 
 const float			BALL_RADIUS							= 0.025f;
 const float			BALL_DENSITY						= 0.0001f;
 const float			BALL_FRICTION						= 0.01f;
 const float			BALL_RESTITUTION					= 0.9f;
 
+const float			FLIPPER_HEIGHT						= 0.05f;
+const float			FLIPPER_WIDTH						= 0.075f;
 const float			FLIPPER_DENSITY						= 0.0001f;
 const float			FLIPPER_FRICTION					= 0.01f;
 const float			FLIPPER_RESTITUTION					= 0.3f;
@@ -60,6 +65,9 @@ class Simulation{
 		//The ball used to play the game
 		b2Body*											ballBody;
 
+		//Collision = gameover
+		b2Body*											gameoverBody;
+
 		//The flipper on the left hand side
 		b2Body*											flipperLeftBody;
 		b2RevoluteJoint*								flipperLeftRevJoint;
@@ -70,6 +78,7 @@ class Simulation{
 
 		UserData										borderData;
 		UserData										ballData;
+		UserData										gameOverData;
 		UserData										flipperData;
 
 	public:
@@ -81,6 +90,7 @@ class Simulation{
 			world(this->gravity),
 			borderData(UserData::PINBALL_BORDER),
 			ballData(UserData::PINBALL_BALL),
+			gameOverData(UserData::PINBALL_GAMEOVER),
 			flipperData(UserData::PINBALL_FLIPPER){
 
 			/* Initializes a world with gravity pulling downwards and add contact listener */
@@ -90,40 +100,53 @@ class Simulation{
 
 			/* Define edge shape of the playing field */
 			b2Vec2 playingFieldVertices[PLAYINGFIELD_VERTEX_NUMBER];
-			playingFieldVertices[0].Set(FLIPPER_HEIGHT / 8, 0);
-			playingFieldVertices[1].Set((FLIPPER_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[2].Set((FLIPPER_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[3].Set((FLIPPER_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[4].Set((FLIPPER_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[5].Set((FLIPPER_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[6].Set((FLIPPER_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[7].Set((FLIPPER_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[8].Set((FLIPPER_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[9].Set((FLIPPER_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[0].Set(FIELD_HEIGHT / 8, 0);
+			playingFieldVertices[1].Set((FIELD_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(1 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[2].Set((FIELD_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(2 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[3].Set((FIELD_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(3 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[4].Set((FIELD_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(4 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[5].Set((FIELD_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(5 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[6].Set((FIELD_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(6 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[7].Set((FIELD_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[8].Set((FIELD_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[9].Set((FIELD_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FIELD_HEIGHT / 8));
 			
-			playingFieldVertices[10].Set(0						, 6 * FLIPPER_HEIGHT / 8);
-			playingFieldVertices[11].Set(FLIPPER_HEIGHT / 8		, 7 * FLIPPER_HEIGHT / 8);
-			playingFieldVertices[12].Set(FLIPPER_HEIGHT / 8		, FLIPPER_HEIGHT);
-			playingFieldVertices[13].Set(3 * FLIPPER_HEIGHT / 8	, FLIPPER_HEIGHT);
-			playingFieldVertices[14].Set(3 * FLIPPER_HEIGHT / 8	, 7 * FLIPPER_HEIGHT / 8);
-			playingFieldVertices[15].Set(4 * FLIPPER_HEIGHT / 8	, 6 * FLIPPER_HEIGHT / 8);
-			playingFieldVertices[16].Set(4 * FLIPPER_HEIGHT / 8	, 1 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[10].Set(0						, 6 * FIELD_HEIGHT / 8);
+			playingFieldVertices[11].Set(FIELD_HEIGHT / 8		, 7 * FIELD_HEIGHT / 8);
+			playingFieldVertices[12].Set(FIELD_HEIGHT / 8		, FIELD_HEIGHT);
+			playingFieldVertices[13].Set(3 * FIELD_HEIGHT / 8	, FIELD_HEIGHT);
+			playingFieldVertices[14].Set(3 * FIELD_HEIGHT / 8	, 7 * FIELD_HEIGHT / 8);
+			playingFieldVertices[15].Set(4 * FIELD_HEIGHT / 8	, 6 * FIELD_HEIGHT / 8);
+			playingFieldVertices[16].Set(4 * FIELD_HEIGHT / 8	, 1 * FIELD_HEIGHT / 8);
 
-			playingFieldVertices[17].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[18].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[19].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[20].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[21].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[22].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[23].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[24].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[25].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
-			playingFieldVertices[26].Set((3 * FLIPPER_HEIGHT / 8 )	, 0);
-			playingFieldVertices[27].Set(FLIPPER_HEIGHT / 8			, 0);
+			playingFieldVertices[17].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(1 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[18].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(2 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[19].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(3 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[20].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(4 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[21].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(5 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[22].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(6 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[23].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(7 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[24].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(8 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[25].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(9 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FIELD_HEIGHT / 8));
+			playingFieldVertices[26].Set((3 * FIELD_HEIGHT / 8 )	, 0);
+			playingFieldVertices[27].Set(FIELD_HEIGHT / 8			, 0);
 			
 
 			drawPlayingField(playingFieldVertices);
 			
+			/* Add the gameover field */
+			b2BodyDef									gameOverDef;
+			gameOverDef.type							= b2_staticBody;
+			gameOverDef.position.Set(FIELD_WIDTH/2, FIELD_HEIGHT - (GAME_OVER_HEIGHT/2));
+
+			gameoverBody								= world.CreateBody(&gameOverDef);
+
+			gameoverBody->SetUserData(&gameOverData);
+
+			b2PolygonShape gameOverBox;
+			gameOverBox.SetAsBox(GAME_OVER_WIDTH/2, GAME_OVER_HEIGHT/2);
+			gameoverBody->CreateFixture(&gameOverBox, 0.0f);
+
 			/* Add the two flippers */
 			b2BodyDef									flipperLeftDef;
 			b2BodyDef									flipperRightDef;
@@ -131,8 +154,8 @@ class Simulation{
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
 
-			flipperLeftDef.position.Set((FLIPPER_HEIGHT/8), (7*FLIPPER_HEIGHT/8));
-			flipperRightDef.position.Set((3*FLIPPER_HEIGHT/8), (7*FLIPPER_HEIGHT/8));
+			flipperLeftDef.position.Set((FIELD_HEIGHT/8), (7*FIELD_HEIGHT/8));
+			flipperRightDef.position.Set((3*FIELD_HEIGHT/8), (7*FIELD_HEIGHT/8));
 
 			flipperLeftBody								= world.CreateBody(&flipperLeftDef);
 			flipperRightBody							= world.CreateBody(&flipperRightDef);
@@ -149,16 +172,16 @@ class Simulation{
 			/* Triangle */
 			b2Vec2 leftFlipperVertices[3];
 			leftFlipperVertices[0].Set(0.0f, 0.0f);
-			leftFlipperVertices[1].Set(0.0f, 0.05f);
-			leftFlipperVertices[2].Set(0.075f, 0.01f);
+			leftFlipperVertices[1].Set(0.0f, FLIPPER_HEIGHT);
+			leftFlipperVertices[2].Set(FLIPPER_WIDTH, FLIPPER_HEIGHT);
 
 			flipperLeftTriangle.Set(leftFlipperVertices, 3);
 
 			/* Triangle */
 			b2Vec2 rightFlipperVertices[3];
 			rightFlipperVertices[0].Set(0.0f, 0.0f);
-			rightFlipperVertices[1].Set(0.0f, 0.05f);
-			rightFlipperVertices[2].Set(-0.075f, 0.01f);
+			rightFlipperVertices[1].Set(0.0f, FLIPPER_HEIGHT);
+			rightFlipperVertices[2].Set(-FLIPPER_WIDTH, FLIPPER_HEIGHT);
 
 			flipperRightTriangle.Set(rightFlipperVertices, 3);
 
@@ -210,7 +233,7 @@ class Simulation{
 			/* Init playing ball */
 			b2BodyDef									ballDef;
 			ballDef.type								= b2_dynamicBody;
-			ballDef.position.Set(1.5*(FLIPPER_WIDTH/2), (FLIPPER_HEIGHT/2));
+			ballDef.position.Set(1.5*(FIELD_WIDTH/2), (FIELD_HEIGHT/2));
 			ballBody									= world.CreateBody(&ballDef);
 
 			ballBody->SetUserData(&ballData);
