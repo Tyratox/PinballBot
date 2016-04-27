@@ -20,7 +20,7 @@
 
 const int32			VELOCITY_ITERATIONS					= 6;
 const int32			POSITION_ITERATIONS					= 2;
-const int32			PLAYINGFIELD_VERTEX_NUMBER			= 17;
+const int32			PLAYINGFIELD_VERTEX_NUMBER			= 28;
 
 const float			GRAVITY_X							= 0;
 const float			GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
@@ -102,14 +102,27 @@ class Simulation{
 			playingFieldVertices[7].Set((FLIPPER_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[8].Set((FLIPPER_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
 			playingFieldVertices[9].Set((FLIPPER_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			
 			playingFieldVertices[10].Set(0						, 6 * FLIPPER_HEIGHT / 8);
 			playingFieldVertices[11].Set(FLIPPER_HEIGHT / 8		, 7 * FLIPPER_HEIGHT / 8);
 			playingFieldVertices[12].Set(FLIPPER_HEIGHT / 8		, FLIPPER_HEIGHT);
 			playingFieldVertices[13].Set(3 * FLIPPER_HEIGHT / 8	, FLIPPER_HEIGHT);
 			playingFieldVertices[14].Set(3 * FLIPPER_HEIGHT / 8	, 7 * FLIPPER_HEIGHT / 8);
 			playingFieldVertices[15].Set(4 * FLIPPER_HEIGHT / 8	, 6 * FLIPPER_HEIGHT / 8);
-			playingFieldVertices[16].Set(4 * FLIPPER_HEIGHT / 8, 1 * FLIPPER_HEIGHT / 8);
+			playingFieldVertices[16].Set(4 * FLIPPER_HEIGHT / 8	, 1 * FLIPPER_HEIGHT / 8);
 
+			playingFieldVertices[17].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[18].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[19].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[20].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[21].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[22].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[23].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[24].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[25].Set((3 * FLIPPER_HEIGHT / 8 ) + (std::cos(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8), (FLIPPER_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FLIPPER_HEIGHT / 8));
+			playingFieldVertices[26].Set((3 * FLIPPER_HEIGHT / 8 )	, 0);
+			playingFieldVertices[27].Set(FLIPPER_HEIGHT / 8			, 0);
+			
 
 			drawPlayingField(playingFieldVertices);
 			
@@ -165,10 +178,10 @@ class Simulation{
 			b2RevoluteJointDef							flipperLeftRevJointDef;
 			b2RevoluteJointDef							flipperRightRevJointDef;
 
-			flipperLeftRevJointDef.bodyA				= playingFieldBody[0];
+			flipperLeftRevJointDef.bodyA				= playingFieldBody[12];
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
-			flipperRightRevJointDef.bodyA				= playingFieldBody[0];
+			flipperRightRevJointDef.bodyA				= playingFieldBody[14];
 			flipperRightRevJointDef.bodyB				= flipperRightBody;
 
 			flipperLeftRevJointDef.localAnchorA			= b2Vec2((WALL_THICKNESS/2), 0.0f);
