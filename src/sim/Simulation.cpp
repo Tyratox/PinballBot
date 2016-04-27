@@ -52,30 +52,17 @@ class PinballSimulation{
 		b2World											world;
 
 		//The playing field
-		b2BodyDef										playingFieldDef[PLAYINGFIELD_VERTEX_NUMBER];
 		b2Body*											playingFieldBody[PLAYINGFIELD_VERTEX_NUMBER];
-		b2EdgeShape										playingFieldEdge[PLAYINGFIELD_VERTEX_NUMBER];
 
 		//The ball used to play the game
-		b2BodyDef										ballDef;
 		b2Body*											ballBody;
-		b2CircleShape									ballSphere;
-		b2FixtureDef									ballFixtureDef;
 
 		//The flipper on the left hand side
-		b2BodyDef										flipperLeftDef;
 		b2Body*											flipperLeftBody;
-		b2PolygonShape									flipperLeftTriangle;
-		b2FixtureDef									flipperLeftFixtureDef;
-		b2RevoluteJointDef								flipperLeftRevJointDef;
 		b2RevoluteJoint*								flipperLeftRevJoint;
 
 		//The flipper on the right hand side
-		b2BodyDef										flipperRightDef;
 		b2Body*											flipperRightBody;
-		b2PolygonShape									flipperRightTriangle;
-		b2FixtureDef									flipperRightFixtureDef;
-		b2RevoluteJointDef								flipperRightRevJointDef;
 		b2RevoluteJoint*								flipperRightRevJoint;
 
 	public:
@@ -104,12 +91,24 @@ class PinballSimulation{
 
 			drawPlayingField(playingFieldVertices);
 			
-			/* Add 2 flippers */
+			/* Add the two flippers */
+			b2BodyDef									flipperLeftDef;
+			b2BodyDef									flipperRightDef;
+
 			flipperLeftDef.type							= b2_dynamicBody;
 			flipperRightDef.type						= b2_dynamicBody;
 
 			flipperLeftDef.position.Set(WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
 			flipperRightDef.position.Set(FLIPPER_WIDTH-WALL_THICKNESS, (3*FLIPPER_HEIGHT/4));
+
+			flipperLeftBody								= world.CreateBody(&flipperLeftDef);
+			flipperRightBody							= world.CreateBody(&flipperRightDef);
+
+			b2FixtureDef								flipperLeftFixtureDef;
+			b2FixtureDef								flipperRightFixtureDef;
+
+			b2PolygonShape								flipperRightTriangle;
+			b2PolygonShape								flipperLeftTriangle;
 
 			/* Triangle */
 			b2Vec2 leftFlipperVertices[3];
@@ -127,20 +126,20 @@ class PinballSimulation{
 
 			flipperRightTriangle.Set(rightFlipperVertices, 3);
 
-			flipperLeftBody								= world.CreateBody(&this->flipperLeftDef);
-			flipperRightBody							= world.CreateBody(&this->flipperRightDef);
+			flipperLeftFixtureDef.shape					= &flipperLeftTriangle;
+			flipperRightFixtureDef.shape				= &flipperRightTriangle;
 
-			this->flipperLeftFixtureDef.shape			= &this->flipperLeftTriangle;
-			this->flipperRightFixtureDef.shape			= &this->flipperRightTriangle;
+			flipperLeftFixtureDef.density				= flipperRightFixtureDef.density		= FLIPPER_DENSITY;
+			flipperLeftFixtureDef.friction				= flipperRightFixtureDef.friction		= FLIPPER_FRICTION;
+			flipperLeftFixtureDef.restitution			= flipperRightFixtureDef.restitution	= FLIPPER_RESTITUTION;
 
-			this->flipperLeftFixtureDef.density			= this->flipperRightFixtureDef.density = FLIPPER_DENSITY;
-			this->flipperLeftFixtureDef.friction		= this->flipperRightFixtureDef.friction = FLIPPER_FRICTION;
-			this->flipperLeftFixtureDef.restitution		= this->flipperRightFixtureDef.restitution = FLIPPER_RESTITUTION;
-
-			this->flipperLeftBody->CreateFixture(&this->flipperLeftFixtureDef);
-			this->flipperRightBody->CreateFixture(&this->flipperRightFixtureDef);
+			this->flipperLeftBody->CreateFixture(&flipperLeftFixtureDef);
+			this->flipperRightBody->CreateFixture(&flipperRightFixtureDef);
 
 			/* Connect the flippers to the walls with a joint */
+			b2RevoluteJointDef							flipperLeftRevJointDef;
+			b2RevoluteJointDef							flipperRightRevJointDef;
+
 			flipperLeftRevJointDef.bodyA				= playingFieldBody[0];
 			flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
@@ -173,32 +172,44 @@ class PinballSimulation{
 			flipperRightRevJoint						= (b2RevoluteJoint*)this->world.CreateJoint(&flipperRightRevJointDef);
 
 			/* Init playing ball */
+			b2BodyDef									ballDef;
 			ballDef.type								= b2_dynamicBody;
 			ballDef.position.Set((FLIPPER_WIDTH/2), (FLIPPER_HEIGHT/2));
-			ballBody									= world.CreateBody(&this->ballDef);
+			ballBody									= world.CreateBody(&ballDef);
 
-			this->ballSphere.m_p.Set(0.0f, 0.0f);
-			this->ballSphere.m_radius					= BALL_RADIUS;
+			b2CircleShape								ballSphere;
+			ballSphere.m_p.Set(0.0f, 0.0f);
+			ballSphere.m_radius							= BALL_RADIUS;
 
-			this->ballFixtureDef.shape					= &this->ballSphere;
-			this->ballFixtureDef.density				= BALL_DENSITY;
-			this->ballFixtureDef.friction				= BALL_FRICTION;
-			this->ballFixtureDef.restitution			= BALL_RESTITUTION;
+			b2FixtureDef								ballFixtureDef;
+			ballFixtureDef.shape						= &ballSphere;
+			ballFixtureDef.density						= BALL_DENSITY;
+			ballFixtureDef.friction						= BALL_FRICTION;
+			ballFixtureDef.restitution					= BALL_RESTITUTION;
 
-			this->ballBody->CreateFixture(&this->ballFixtureDef);
+			this->ballBody->CreateFixture(&ballFixtureDef);
 		}
 
 		void drawPlayingField(const b2Vec2* points){
 			for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER-1;i++){
 
-				playingFieldDef[i].type			=	b2_staticBody;
-				playingFieldDef[i].position.Set(0, 0);
+				/*
+				 * The world object does not keep a reference to the body definition.
+				 */
+				b2BodyDef	def;
+				def.type					=	b2_staticBody;
+				def.position.Set(0, 0);
 
-				playingFieldEdge[i].Set(points[i], points[i+1]);
+				playingFieldBody[i]				= world.CreateBody(&def);
 
-				playingFieldBody[i]				= world.CreateBody(&playingFieldDef[i]);
+				/*
+				 * Factories do not retain references to the definitions.
+				 * So you can create definitions on the stack and keep them in temporary resources.
+				 */
+				b2EdgeShape edge;
+				edge.Set(points[i], points[i+1]);
 
-				playingFieldBody[i]->CreateFixture(&playingFieldEdge[i], 0.0f);
+				playingFieldBody[i]->CreateFixture(&edge, 0.0f);
 
 			}
 		}
