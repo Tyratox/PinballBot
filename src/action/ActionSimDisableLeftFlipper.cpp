@@ -1,29 +1,18 @@
 /*
  * ActionSimDisableLeftFlipper.cpp
  *
- * Sim Action that disables the left flipper
+ * Sim action that disables the left flipper
  *
  */
 
-#ifndef PINBALL_BOT_ACTION_SIM_DISABLE_LEFT_FLIPPER
-#define PINBALL_BOT_ACTION_SIM_DISABLE_LEFT_FLIPPER
+#include "ActionSimDisableLeftFlipper.h"
+#include "Action.h"
+#include "../sim/Simulation.h"
 
-#include "Action.cpp"
-#include "../sim/Simulation.cpp"
+ActionSimDisableLeftFlipper::ActionSimDisableLeftFlipper(Simulation &sim) : sim(sim){
 
-class ActionSimDisableLeftFlipper : public Action{
+}
 
-	Simulation &sim;
-
-	private:
-	public:
-		ActionSimDisableLeftFlipper(Simulation &sim) : sim(sim){
-
-		}
-
-		void run(){
-			sim.disableLeftFlipper();
-		}
-};
-
-#endif /* PINBALL_BOT_ACTION_SIM_DISABLE_LEFT_FLIPPER */
+void ActionSimDisableLeftFlipper::run(){
+	sim.disableLeftFlipper();
+}

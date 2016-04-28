@@ -4,8 +4,7 @@
  * Renders the box2d content
  */
 
-#ifndef PINBALL_BOT_RENDERER
-#define PINBALL_BOT_RENDERER
+#include <vector>
 
 #include <Box2D/Box2D.h>
 
@@ -14,193 +13,116 @@
 
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-#include <iostream>
-#include <vector>
+#include "Renderer.h"
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#ifdef _WIN32
-  #include <windows.h>
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
+const float Renderer::NUMERATOR				= 7.0f;
+const float Renderer::DENOMINATOR			= 9.0f;
 
-class Renderer : public b2Draw{
+const float Renderer::SCALING				= NUMERATOR / DENOMINATOR;
+const float Renderer::PADDING_PERCENT		= (DENOMINATOR - NUMERATOR) / DENOMINATOR / 2;
 
-	private:
+int Renderer::metersToPixels(const float &meters){
+	return round(meters * oneMeterInPX);
+}
 
-		const float NUMERATOR			= 7.0f;
-		const float DENOMINATOR			= 9.0f;
+b2Vec2 Renderer::toScreenCoords(const b2Vec2 &position){
+	return b2Vec2 (
+			round(width * PADDING_PERCENT) + metersToPixels(position.x),
+			round(height * PADDING_PERCENT) + metersToPixels(position.y)
+	);
+}
 
-		const float SCALING				= NUMERATOR / DENOMINATOR;
-		const float PADDING_PERCENT		= (DENOMINATOR - NUMERATOR) / DENOMINATOR / 2;
+Renderer::Renderer(int width, int height) : width(width), height(height){
 
-		int		width;
-		int		height;
+	SDL_Init( /*SDL_INIT_EVERYTHING*/SDL_INIT_VIDEO );
 
-		int		oneMeterInPX;
+	window = SDL_CreateWindow(
+		"PinballBot",						// window title
+		SDL_WINDOWPOS_CENTERED,				// initial x position
+		SDL_WINDOWPOS_CENTERED,				// initial y position
+		this->width,						// width, in pixels
+		this->height,						// height, in pixels
+		SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
+	);
 
-		SDL_Window*		window;
-		SDL_Renderer*	renderer;
+	if (window == nullptr) {
+		printf("Could not create window: %s\n", SDL_GetError());
+		SDL_Quit();
+		return;
+	}
 
-		/**
-		 * Converts Box2D meters into screen pixels
-		 * @param	meters		float		The amount of meters to convert
-		 * @return				int			The rounded amount of corresponding screen pixels
-		 */
-		int metersToPixels(const float &meters){
-			return round(meters * oneMeterInPX);
-		}
+	//updates the width and height if there's a high DPI and calc other vars afterwards
+	SDL_GL_GetDrawableSize(window, &this->width, &this->height);
 
-		/**
-		 * Converts a Box2D vector into screen coordinates using metersToPixels()
-		 * @param	position	b2Vec2		The Box2D vector to convert
-		 * @return				b2vec2		The converted Box2D vector
-		 */
-		b2Vec2 toScreenCoords(const b2Vec2 &position){
-			return b2Vec2 (
-					round(width * PADDING_PERCENT) + metersToPixels(position.x),
-					round(height * PADDING_PERCENT) + metersToPixels(position.y)
-			);
-		}
+	oneMeterInPX = round(SCALING * this->height); /* one meter is equal to half of the width of the window */
 
-	public:
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
 
-		/**
-		 * Inits all required values based on the given window width/height and the DPI
-		 */
-		Renderer(int width, int height) : width(width), height(height){
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); //white background
+	SDL_RenderClear(renderer);
+}
 
-			SDL_Init( /*SDL_INIT_EVERYTHING*/SDL_INIT_VIDEO );
+Renderer::~Renderer(){
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+}
 
-			window = SDL_CreateWindow(
-				"PinballBot",						// window title
-				SDL_WINDOWPOS_CENTERED,				// initial x position
-				SDL_WINDOWPOS_CENTERED,				// initial y position
-				this->width,						// width, in pixels
-				this->height,						// height, in pixels
-				SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
-			);
+void Renderer::redraw(){
 
-			if (window == nullptr) {
-				printf("Could not create window: %s\n", SDL_GetError());
-				SDL_Quit();
-				return;
-			}
+	SDL_RenderPresent(renderer);
 
-			//updates the width and height if there's a high DPI and calc other vars afterwards
-			SDL_GL_GetDrawableSize(window, &this->width, &this->height);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+}
 
-			oneMeterInPX = round(SCALING * this->height); /* one meter is equal to half of the width of the window */
+void Renderer::dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
+	std::vector<short> x(vertexCount);
+	std::vector<short> y(vertexCount);
 
-			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-			SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
+	for(int i=0;i<vertexCount;i++){
+		b2Vec2 vec = toScreenCoords(vertices[i]);
 
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); //white background
-			SDL_RenderClear(renderer);
-		}
+		x[i] = (short) vec.x;
+		y[i] = (short) vec.y;
+	}
 
-		/**
-		 * Uses SDL functions to remove objects
-		 */
-		~Renderer(){
-			SDL_DestroyWindow(window);
-			SDL_Quit();
-		}
+	if(filled){
+		filledPolygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
+	}else{
+		polygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
+	}
+}
 
-		/**
-		 * Redraws the scene onto the window
-		 * @return	void
-		 */
-		void redraw(){
+void Renderer::dCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
+	b2Vec2 coords = toScreenCoords(center);
 
-			//filledCircleColor(renderer, 320, 91, 10, createRGBA(255,0,0,255));
+	if(filled){
+		filledCircleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
+	}else{
+		circleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
+	}
+}
 
-			SDL_RenderPresent(renderer);
+void Renderer::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
+	dPolygon(vertices, vertexCount, 0, 0, 0, 255, false);
+}
+void Renderer::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
+	dPolygon(vertices, vertexCount, 0, 0, 0, 255, true);
+}
 
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			SDL_RenderClear(renderer);
-		}
+void Renderer::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
+	dCircle(center, radius, 0, 0, 0, 255, false);
+}
+void Renderer::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
+	dCircle(center, radius, 0, 0, 0, 255, true);
+}
 
-		/**
-		 * Draws a polygon
-		 * @param	vertices		b2Vec2		The vertices of the polygon
-		 * @param	vertexCount		int32		The amount of vertices
-		 * @param	red				Uint8		The amount of red	in the color
-		 * @param	green			Uint8		The amount of green	in the color
-		 * @param	blue			Uint8		The amount of blue	in the color
-		 * @param	alpha			Uint8		The opacity of the color
-		 * @param	filled			bool		Draw a filled polygon or just the outlines?
-		 * @return	void
-		 */
-		void dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
-			std::vector<short> x(vertexCount);
-			std::vector<short> y(vertexCount);
+void Renderer::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
+	b2Vec2 from = toScreenCoords(p1);
+	b2Vec2 to = toScreenCoords(p2);
 
-			for(int i=0;i<vertexCount;i++){
-				b2Vec2 vec = toScreenCoords(vertices[i]);
-
-				x[i] = (short) vec.x;
-				y[i] = (short) vec.y;
-			}
-
-			if(filled){
-				filledPolygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
-			}else{
-				polygonRGBA(renderer, x.data(), y.data(), vertexCount, red, green, blue, alpha);
-			}
-		}
-
-		/**
-		 * Draws a circle
-		 * @param	center			b2Vec2		The coordinates of the center of the circle
-		 * @param	radius			float32		The radius of the circle
-		 * @param	red				Uint8		The amount of red	in the color
-		 * @param	green			Uint8		The amount of green	in the color
-		 * @param	blue			Uint8		The amount of blue	in the color
-		 * @param	alpha			Uint8		The opacity of the color
-		 * @param	filled			bool		Draw a filled polygon or just the outlines?
-		 * @return	void
-		 */
-		void dCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
-			b2Vec2 coords = toScreenCoords(center);
-
-			if(filled){
-				filledCircleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
-			}else{
-				circleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
-			}
-		}
-
-		/**
-		 * Implements the b2Draw functions
-		 */
-			void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-				dPolygon(vertices, vertexCount, 0, 0, 0, 255, false);
-			}
-			void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-				dPolygon(vertices, vertexCount, 0, 0, 0, 255, true);
-			}
-
-			void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
-				dCircle(center, radius, 0, 0, 0, 255, false);
-			}
-			void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
-				dCircle(center, radius, 0, 0, 0, 255, true);
-			}
-
-			void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-				b2Vec2 from = toScreenCoords(p1);
-				b2Vec2 to = toScreenCoords(p2);
-
-				lineRGBA(renderer, (Sint16) from.x, (Sint16) from.y, (Sint16) to.x, (Sint16) to.y, 0, 0, 0, 255);
-			}
-			void DrawTransform(const b2Transform& xf) {
-			}
-
-};
-
-#endif /* PINBALL_BOT_RENDERER */
+	lineRGBA(renderer, (Sint16) from.x, (Sint16) from.y, (Sint16) to.x, (Sint16) to.y, 0, 0, 0, 255);
+}
+void Renderer::DrawTransform(const b2Transform& xf) {
+}

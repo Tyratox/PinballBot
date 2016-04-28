@@ -7,13 +7,13 @@
 #include <iostream>
 #include <vector>
 
-#include "../sim/Simulation.cpp"
+#include "../sim/Simulation.h"
 
-#include "Action.cpp"
-#include "ActionSimEnableLeftFlipper.cpp"
-#include "ActionSimDisableLeftFlipper.cpp"
-#include "ActionSimEnableRightFlipper.cpp"
-#include "ActionSimDisableRightFlipper.cpp"
+#include "Action.h"
+#include "ActionSimEnableLeftFlipper.h"
+#include "ActionSimDisableLeftFlipper.h"
+#include "ActionSimEnableRightFlipper.h"
+#include "ActionSimDisableRightFlipper.h"
 
 class ActionsSim{
 	private:

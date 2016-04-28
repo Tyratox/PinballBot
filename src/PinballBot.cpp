@@ -12,8 +12,8 @@
 
 #include "action/ActionsSim.cpp"
 
-#include "sim/Simulation.cpp"
-#include "sim/Renderer.cpp"
+#include "sim/Simulation.h"
+#include "sim/Renderer.h"
 
 const bool					SIMULATION			= true;
 

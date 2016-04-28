@@ -1,25 +1,13 @@
 /*
  * Action.cpp
- * Interface/Virtual class for all actions available to the RL agent
  *
+ * An action that can be executed by the agent
  */
 
-#ifndef PINBALL_BOT_ACTION
-#define PINBALL_BOT_ACTION
+#include "Action.h"
 
-class Action{
-	private:
+Action::Action(){}
 
-	public:
+Action::~Action(){}
 
-		Action(){
-		}
-
-		virtual ~Action(){}
-
-		virtual void run(){
-			//The implementation of the action
-		}
-};
-
-#endif /* PINBALL_BOT_ACTION */
+void Action::run(){}
