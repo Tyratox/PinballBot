@@ -72,6 +72,9 @@ class Simulation{
 		//The playing field
 		std::vector<b2Body*>							playingFieldBody;
 
+		//Kicker border
+		b2Body*											kickerBorderBody;
+
 		//The ball used to play the game
 		b2Body*											ballBody;
 

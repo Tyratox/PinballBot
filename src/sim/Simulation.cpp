@@ -21,7 +21,7 @@
 
 const int32			Simulation::VELOCITY_ITERATIONS					= 6;
 const int32			Simulation::POSITION_ITERATIONS					= 2;
-const int32			Simulation::PLAYINGFIELD_VERTEX_NUMBER			= 28;
+const int32			Simulation::PLAYINGFIELD_VERTEX_NUMBER			= 29;
 
 const float			Simulation::GRAVITY_X							= 0;
 const float			Simulation::GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
@@ -85,33 +85,54 @@ Simulation::Simulation():
 	playingFieldVertices[8].Set((FIELD_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(8 * b2_pi / 20)*FIELD_HEIGHT / 8));
 	playingFieldVertices[9].Set((FIELD_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::cos(9 * b2_pi / 20)*FIELD_HEIGHT / 8));
 
-	playingFieldVertices[10].Set(0						, 6 * FIELD_HEIGHT / 8);
-	playingFieldVertices[11].Set(FIELD_HEIGHT / 8		, 7 * FIELD_HEIGHT / 8);
-	playingFieldVertices[12].Set(FIELD_HEIGHT / 8		, FIELD_HEIGHT);
-	playingFieldVertices[13].Set(3 * FIELD_HEIGHT / 8	, FIELD_HEIGHT);
-	playingFieldVertices[14].Set(3 * FIELD_HEIGHT / 8	, 7 * FIELD_HEIGHT / 8);
-	playingFieldVertices[15].Set(4 * FIELD_HEIGHT / 8	, 6 * FIELD_HEIGHT / 8);
-	playingFieldVertices[16].Set(4 * FIELD_HEIGHT / 8	, 1 * FIELD_HEIGHT / 8);
+	playingFieldVertices[10].Set(		0				, 6 *	FIELD_HEIGHT / 8);
+	playingFieldVertices[11].Set(		FIELD_WIDTH / 6	, 7 *	FIELD_HEIGHT / 8);
+	playingFieldVertices[12].Set(		FIELD_WIDTH / 6	,		FIELD_HEIGHT);
+	playingFieldVertices[13].Set(4 *	FIELD_WIDTH / 6	,		FIELD_HEIGHT);
+	playingFieldVertices[14].Set(4 *	FIELD_WIDTH / 6	, 7 *	FIELD_HEIGHT / 8);
+	playingFieldVertices[15].Set(5 *	FIELD_WIDTH / 6	, 6 *	FIELD_HEIGHT / 8);
+	playingFieldVertices[16].Set(6 *	FIELD_WIDTH / 6	, 6 *	FIELD_HEIGHT / 8);
+	playingFieldVertices[17].Set(6 *	FIELD_WIDTH / 6	, 1 *	FIELD_HEIGHT / 8);
 
-	playingFieldVertices[17].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(1 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[18].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(2 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[19].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(3 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[20].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(4 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[21].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(5 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[22].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(6 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[23].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(7 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[24].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(8 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[25].Set((3 * FIELD_HEIGHT / 8 ) + (std::cos(9 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FIELD_HEIGHT / 8));
-	playingFieldVertices[26].Set((3 * FIELD_HEIGHT / 8 )	, 0);
-	playingFieldVertices[27].Set(FIELD_HEIGHT / 8			, 0);
+	playingFieldVertices[18].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(1 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(1 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[19].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(2 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(2 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[20].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(3 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(3 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[21].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(4 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(4 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[22].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(5 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(5 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[23].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(6 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(6 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[24].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(7 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(7 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[25].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(8 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(8 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[26].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 + (std::cos(9 * b2_pi / 20)*FIELD_HEIGHT / 8), (FIELD_HEIGHT / 8) - (std::sin(9 * b2_pi / 20)*FIELD_HEIGHT / 8));
+	playingFieldVertices[27].Set(FIELD_WIDTH - FIELD_HEIGHT / 8 ,0);
+	playingFieldVertices[28].Set(FIELD_HEIGHT / 8			, 0);
 
 	drawPlayingField(playingFieldVertices);
+
+	/* kicker Border */
+	b2BodyDef									kickerBorderDef;
+	kickerBorderDef.type						= b2_staticBody;
+	kickerBorderDef.position.Set(5 * FIELD_WIDTH / 6, 6 * FIELD_HEIGHT / 8);
+
+	kickerBorderBody							= world.CreateBody(&kickerBorderDef);
+
+	kickerBorderBody->SetUserData(&borderData);
+	
+	b2EdgeShape									kickerBorderShape;
+	kickerBorderShape.Set(b2Vec2(0.0f, 0.0f), b2Vec2(0.0f, -1 * 4 * FIELD_HEIGHT / 8));
+
+	b2FixtureDef								kickerBorderFixtureDef;
+	kickerBorderFixtureDef.shape				= &kickerBorderShape;
+	kickerBorderFixtureDef.density				= BORDER_DENSITY;
+	kickerBorderFixtureDef.friction				= BORDER_FRICTION;
+	kickerBorderFixtureDef.restitution			= BORDER_RESTITUTION;
+
+	kickerBorderBody->CreateFixture(&kickerBorderFixtureDef);
 
 
 	/* Add the game over field */
 	b2BodyDef									gameOverDef;
 	gameOverDef.type							= b2_staticBody;
-	gameOverDef.position.Set(FIELD_WIDTH/2, FIELD_HEIGHT - (GAME_OVER_HEIGHT/2));
+	gameOverDef.position.Set(5 * FIELD_WIDTH / 12, FIELD_HEIGHT - (GAME_OVER_HEIGHT/2));
 
 	gameOverBody								= world.CreateBody(&gameOverDef);
 
