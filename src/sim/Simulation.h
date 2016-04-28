@@ -39,6 +39,10 @@ class Simulation{
 		static const float			GAME_OVER_HEIGHT;
 		static const float			GAME_OVER_WIDTH;
 
+		static const float			BORDER_DENSITY;
+		static const float			BORDER_FRICTION;
+		static const float			BORDER_RESTITUTION;
+
 		static const float			BALL_RADIUS;
 		static const float			BALL_DENSITY;
 		static const float			BALL_FRICTION;

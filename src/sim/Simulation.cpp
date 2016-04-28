@@ -32,6 +32,10 @@ const float			Simulation::FIELD_HEIGHT						= 1.0f;
 const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
 const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
 
+const float			Simulation::BORDER_DENSITY						= 0.0f;
+const float			Simulation::BORDER_FRICTION						= 1.0f;
+const float			Simulation::BORDER_RESTITUTION					= 0.01f;
+
 const float			Simulation::BALL_RADIUS							= 0.025f;
 const float			Simulation::BALL_DENSITY						= 0.0001f;
 const float			Simulation::BALL_FRICTION						= 0.01f;
@@ -224,7 +228,13 @@ void Simulation::drawPlayingField(const b2Vec2* points){
 		b2EdgeShape edge;
 		edge.Set(b2Vec2(0.0f, 0.0f), points[i+1]-points[i]);
 
-		playingFieldBody[i]->CreateFixture(&edge, 0.0f);
+		b2FixtureDef								borderFixtureDef;
+		borderFixtureDef.shape						= &edge;
+		borderFixtureDef.density					= BORDER_DENSITY;
+		borderFixtureDef.friction					= BORDER_FRICTION;
+		borderFixtureDef.restitution				= BORDER_RESTITUTION;
+
+		playingFieldBody[i]->CreateFixture(&borderFixtureDef);
 
 	}
 }
