@@ -54,7 +54,7 @@ Renderer::Renderer(int width, int height) : width(width), height(height){
 	//updates the width and height if there's a high DPI and calc other vars afterwards
 	SDL_GL_GetDrawableSize(window, &this->width, &this->height);
 
-	oneMeterInPX = round(SCALING * this->height); /* one meter is equal to half of the width of the window */
+	oneMeterInPX = round(SCALING * this->height); /* one meter is equal to the height */
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
