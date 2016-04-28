@@ -6,13 +6,17 @@
 
 #include <Box2D/Box2D.h>
 
+#include <functional>
+
 #include "ContactListener.h"
 #include "UserData.h"
+#include "Simulation.h"
 
 const float ContactListener::KICKER_FORCE_X		= 0.0f;
 const float ContactListener::KICKER_FORCE_Y		= 1.0f;
 
-ContactListener::ContactListener(){}
+ContactListener::ContactListener(std::function<void(void)> gameOverCallback):
+	gameOverCallback(gameOverCallback){}
 
 void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold){
 
@@ -60,6 +64,7 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 		}else if(otherObject_data->type == UserData::PINBALL_GAMEOVER){
 			//TODO: big negative reward
 			//TODO: move ball above the kicker
+			gameOverCallback();
 			return;
 		}
 	}

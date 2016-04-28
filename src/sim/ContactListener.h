@@ -15,8 +15,10 @@ class ContactListener: public b2ContactListener{
 		static const float KICKER_FORCE_X;
 		static const float KICKER_FORCE_Y;
 
+		std::function<void(void)> gameOverCallback;
+
 	public:
-		ContactListener();
+		ContactListener(std::function<void(void)> gameOverCallback);
 
 		/// This is called after a contact is updated. This allows you to inspect a
 		/// contact before it goes to the solver. If you are careful, you can modify the

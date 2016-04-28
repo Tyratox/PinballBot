@@ -6,9 +6,11 @@
 
 #include <Box2D/Box2D.h>
 
+#include <iostream>
 #include <stdio.h>
 #include <vector>
 #include <cmath>
+#include <functional>
 
 #include "../agent/Ball.h"
 #include "../agent/State.h"
@@ -46,9 +48,15 @@ const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.1f * b2_pi;
 const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 1.5 * b2_pi; /* rad^-1 */
 const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
-Simulation::Simulation(): gravity(GRAVITY_X, GRAVITY_Y),
+Simulation::Simulation():
+	contactListener(std::bind(&Simulation::gameOver, this)),
+	gravity(GRAVITY_X, GRAVITY_Y),
 	world(this->gravity),
 	playingFieldBody(PLAYINGFIELD_VERTEX_NUMBER),
+	ballBody(NULL),
+	gameOverBody(NULL),
+	flipperLeftBody(NULL),
+	flipperRightBody(NULL),
 	borderData(UserData::PINBALL_BORDER),
 	ballData(UserData::PINBALL_BALL),
 	gameOverData(UserData::PINBALL_GAMEOVER),
@@ -95,18 +103,18 @@ Simulation::Simulation(): gravity(GRAVITY_X, GRAVITY_Y),
 	drawPlayingField(playingFieldVertices);
 
 
-	/* Add the gameover field */
+	/* Add the game over field */
 	b2BodyDef									gameOverDef;
 	gameOverDef.type							= b2_staticBody;
 	gameOverDef.position.Set(FIELD_WIDTH/2, FIELD_HEIGHT - (GAME_OVER_HEIGHT/2));
 
-	gameoverBody								= world.CreateBody(&gameOverDef);
+	gameOverBody								= world.CreateBody(&gameOverDef);
 
-	gameoverBody->SetUserData(&gameOverData);
+	gameOverBody->SetUserData(&gameOverData);
 
 	b2PolygonShape gameOverBox;
 	gameOverBox.SetAsBox(GAME_OVER_WIDTH/2, GAME_OVER_HEIGHT/2);
-	gameoverBody->CreateFixture(&gameOverBox, 0.0f);
+	gameOverBody->CreateFixture(&gameOverBox, 0.0f);
 
 	/* Add the two flippers */
 	b2BodyDef									flipperLeftDef;
@@ -191,25 +199,7 @@ Simulation::Simulation(): gravity(GRAVITY_X, GRAVITY_Y),
 	flipperLeftRevJoint							= (b2RevoluteJoint*)this->world.CreateJoint(&flipperLeftRevJointDef);
 	flipperRightRevJoint						= (b2RevoluteJoint*)this->world.CreateJoint(&flipperRightRevJointDef);
 
-	/* Init playing ball */
-	b2BodyDef									ballDef;
-	ballDef.type								= b2_dynamicBody;
-	ballDef.position.Set(1.5*(FIELD_WIDTH/2), (FIELD_HEIGHT/2));
-	ballBody									= world.CreateBody(&ballDef);
-
-	ballBody->SetUserData(&ballData);
-
-	b2CircleShape								ballSphere;
-	ballSphere.m_p.Set(0.0f, 0.0f);
-	ballSphere.m_radius							= BALL_RADIUS;
-
-	b2FixtureDef								ballFixtureDef;
-	ballFixtureDef.shape						= &ballSphere;
-	ballFixtureDef.density						= BALL_DENSITY;
-	ballFixtureDef.friction						= BALL_FRICTION;
-	ballFixtureDef.restitution					= BALL_RESTITUTION;
-
-	this->ballBody->CreateFixture(&ballFixtureDef);
+	respawnBall();
 }
 
 void Simulation::drawPlayingField(const b2Vec2* points){
@@ -238,7 +228,43 @@ void Simulation::drawPlayingField(const b2Vec2* points){
 	}
 }
 
+void Simulation::respawnBall(){
+
+	if(ballBody){
+		//if not a null pointer
+		world.DestroyBody(ballBody);
+	}
+
+	/* Init playing ball */
+	b2BodyDef									ballDef;
+	ballDef.type								= b2_dynamicBody;
+	ballDef.position.Set(1.5*(FIELD_WIDTH/2), (FIELD_HEIGHT/2));
+	ballBody									= world.CreateBody(&ballDef);
+
+	ballBody->SetUserData(&ballData);
+
+	b2CircleShape								ballSphere;
+	ballSphere.m_p.Set(0.0f, 0.0f);
+	ballSphere.m_radius							= BALL_RADIUS;
+
+	b2FixtureDef								ballFixtureDef;
+	ballFixtureDef.shape						= &ballSphere;
+	ballFixtureDef.density						= BALL_DENSITY;
+	ballFixtureDef.friction						= BALL_FRICTION;
+	ballFixtureDef.restitution					= BALL_RESTITUTION;
+
+	this->ballBody->CreateFixture(&ballFixtureDef);
+}
+
+void Simulation::gameOver(){
+	isGameOver = true;
+}
+
 void Simulation::step(const float32 &time_step){
+	if(isGameOver){
+		respawnBall();
+		isGameOver = false;
+	}
 	world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 }
 

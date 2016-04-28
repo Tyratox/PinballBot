@@ -71,7 +71,7 @@ class Simulation{
 		b2Body*											ballBody;
 
 		//Collision = gameover
-		b2Body*											gameoverBody;
+		b2Body*											gameOverBody;
 
 		//The flipper on the left hand side
 		b2Body*											flipperLeftBody;
@@ -80,6 +80,9 @@ class Simulation{
 		//The flipper on the right hand side
 		b2Body*											flipperRightBody;
 		b2RevoluteJoint*								flipperRightRevJoint;
+
+		//Gameover?
+		bool											isGameOver;
 
 		UserData										borderData;
 		UserData										ballData;
@@ -94,7 +97,24 @@ class Simulation{
 		 */
 		Simulation();
 
+		/**
+		 * Draws the playing field
+		 * @param	points		b2Vec2*		Array of points to connect by creating EdgeShapes
+		 * @return				void
+		 */
 		void drawPlayingField(const b2Vec2* points);
+
+		/**
+		 * Respawns the ball
+		 * @return void
+		 */
+		void respawnBall();
+
+		/**
+		 * Function executed by the contact listener on game over
+		 * @return void
+		 */
+		void gameOver();
 
 		/**
 		 * Steps a specific value forward in time
