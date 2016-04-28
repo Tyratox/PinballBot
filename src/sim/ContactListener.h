@@ -7,6 +7,8 @@
 #ifndef SIM_CONTACTLISTENER_H_
 #define SIM_CONTACTLISTENER_H_
 
+#include <functional>
+
 #include <Box2D/Box2D.h>
 
 class ContactListener: public b2ContactListener{
