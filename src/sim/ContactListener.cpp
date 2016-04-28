@@ -63,7 +63,6 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_GAMEOVER){
 			//TODO: big negative reward
-			//TODO: move ball above the kicker
 			gameOverCallback();
 			return;
 		}
