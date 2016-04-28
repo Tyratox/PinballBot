@@ -37,16 +37,16 @@ const float			Simulation::BALL_DENSITY						= 0.0001f;
 const float			Simulation::BALL_FRICTION						= 0.01f;
 const float			Simulation::BALL_RESTITUTION					= 0.9f;
 
-const float			Simulation::FLIPPER_HEIGHT						= 0.05f;
-const float			Simulation::FLIPPER_WIDTH						= 0.075f;
+const float			Simulation::FLIPPER_HEIGHT						= 0.04f;
+const float			Simulation::FLIPPER_WIDTH						= 0.08f;
 const float			Simulation::FLIPPER_DENSITY						= 0.0001f;
 const float			Simulation::FLIPPER_FRICTION					= 0.01f;
-const float			Simulation::FLIPPER_RESTITUTION					= 0.3f;
+const float			Simulation::FLIPPER_RESTITUTION					= 1.0f;
 const float			Simulation::FLIPPER_REV_JOINT_LOWER_ANGLE		= (float) 0.0f * b2_pi;
-const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.1f * b2_pi;
+const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.2f * b2_pi;
 
-const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 1.5 * b2_pi; /* rad^-1 */
-const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
+const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 10 * b2_pi; /* rad^-1 */
+const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 100.0f;
 
 Simulation::Simulation():
 	contactListener(std::bind(&Simulation::gameOver, this)),
