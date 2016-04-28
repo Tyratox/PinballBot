@@ -26,23 +26,31 @@ class Simulation{
 	/* Declare public constants first */
 	public:
 
-		static const int32			VELOCITY_ITERATIONS;
-		static const int32			POSITION_ITERATIONS;
-		static const int32			PLAYINGFIELD_VERTEX_NUMBER;
-
-		static const float			GRAVITY_X;
-		static const float			GRAVITY_Y;
+		static const int			VELOCITY_ITERATIONS;
+		static const int			POSITION_ITERATIONS;
+		static const int			PLAYINGFIELD_VERTEX_NUMBER;
 
 		static const float			FIELD_WIDTH;
 		static const float			FIELD_HEIGHT;
+		static const float			FIELD_SLOPE;
 
-		static const float			GAME_OVER_HEIGHT;
-		static const float			GAME_OVER_WIDTH;
+		static const float			GRAVITY_X;
+		static const float			GRAVITY_Y;
 
 		static const float			BORDER_DENSITY;
 		static const float			BORDER_FRICTION;
 		static const float			BORDER_RESTITUTION;
 
+		static const float			KICKER_WIDTH;
+		static const float			KICKER_HEIGHT;
+		static const float			KICKER_DENSITY;
+		static const float			KICKER_FRICTION;
+		static const float			KICKER_RESTITUTION;
+
+		static const float			GAME_OVER_HEIGHT;
+		static const float			GAME_OVER_WIDTH;
+
+		static const float			BALL_WEIGHT;
 		static const float			BALL_RADIUS;
 		static const float			BALL_DENSITY;
 		static const float			BALL_FRICTION;
@@ -75,6 +83,9 @@ class Simulation{
 		//Kicker border
 		b2Body*											kickerBorderBody;
 
+		//Kicker
+		b2Body*											kickerBody;
+
 		//The ball used to play the game
 		b2Body*											ballBody;
 
@@ -94,6 +105,7 @@ class Simulation{
 
 		UserData										borderData;
 		UserData										ballData;
+		UserData										kickerData;
 		UserData										gameOverData;
 		UserData										flipperData;
 

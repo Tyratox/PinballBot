@@ -23,35 +23,43 @@ const int32			Simulation::VELOCITY_ITERATIONS					= 6;
 const int32			Simulation::POSITION_ITERATIONS					= 2;
 const int32			Simulation::PLAYINGFIELD_VERTEX_NUMBER			= 29;
 
-const float			Simulation::GRAVITY_X							= 0;
-const float			Simulation::GRAVITY_Y							= 5.0f; /* positive, cause we start in the top left corner */
-
 const float			Simulation::FIELD_WIDTH							= 0.5f;
 const float			Simulation::FIELD_HEIGHT						= 1.0f;
+const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
-const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
-const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
+const float			Simulation::GRAVITY_X							= 0;
+const float			Simulation::GRAVITY_Y							= std::sin(FIELD_SLOPE) * 9.81f; /* positive, cause we start in the top left corner */
 
 const float			Simulation::BORDER_DENSITY						= 0.0f;
 const float			Simulation::BORDER_FRICTION						= 1.0f;
 const float			Simulation::BORDER_RESTITUTION					= 0.01f;
 
-const float			Simulation::BALL_RADIUS							= 0.025f;
-const float			Simulation::BALL_DENSITY						= 0.0001f;
+const float			Simulation::KICKER_WIDTH						= FIELD_WIDTH / 12;
+const float			Simulation::KICKER_HEIGHT						= 0.01;
+const float			Simulation::KICKER_DENSITY						= 0.0f;
+const float			Simulation::KICKER_FRICTION						= 1.0f;
+const float			Simulation::KICKER_RESTITUTION					= 0.3f;
+
+const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
+const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
+
+const float			Simulation::BALL_WEIGHT							= 0.08f; //80 g
+const float			Simulation::BALL_RADIUS							= 0.025f; // 25 mm
+const float			Simulation::BALL_DENSITY						= (BALL_RADIUS*BALL_RADIUS*b2_pi)/BALL_WEIGHT;
 const float			Simulation::BALL_FRICTION						= 0.01f;
-const float			Simulation::BALL_RESTITUTION					= 0.9f;
+const float			Simulation::BALL_RESTITUTION					= 0.5f;
 
 const float			Simulation::FLIPPER_HEIGHT						= 0.05f;
-const float			Simulation::FLIPPER_WIDTH						= 0.08f;
+const float			Simulation::FLIPPER_WIDTH						= 0.085f;
 const float			Simulation::FLIPPER_APEX_HEIGHT					= 0.03f;
-const float			Simulation::FLIPPER_DENSITY						= 0.0001f;
-const float			Simulation::FLIPPER_FRICTION					= 0.01f;
-const float			Simulation::FLIPPER_RESTITUTION					= 1.0f;
+const float			Simulation::FLIPPER_DENSITY						= 100.0f;
+const float			Simulation::FLIPPER_FRICTION					= 0.5f;
+const float			Simulation::FLIPPER_RESTITUTION					= 0.75f;
 const float			Simulation::FLIPPER_REV_JOINT_LOWER_ANGLE		= (float) 0.0f * b2_pi;
 const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.2f * b2_pi;
 
 const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 10 * b2_pi; /* rad^-1 */
-const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 100.0f;
+const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
 Simulation::Simulation():
 	contactListener(std::bind(&Simulation::gameOver, this)),
@@ -64,6 +72,7 @@ Simulation::Simulation():
 	flipperRightBody(NULL),
 	borderData(UserData::PINBALL_BORDER),
 	ballData(UserData::PINBALL_BALL),
+	kickerData(UserData::PINBALL_KICKER),
 	gameOverData(UserData::PINBALL_GAMEOVER),
 	flipperData(UserData::PINBALL_FLIPPER){
 
@@ -125,9 +134,26 @@ Simulation::Simulation():
 	kickerBorderFixtureDef.density				= BORDER_DENSITY;
 	kickerBorderFixtureDef.friction				= BORDER_FRICTION;
 	kickerBorderFixtureDef.restitution			= BORDER_RESTITUTION;
-
 	kickerBorderBody->CreateFixture(&kickerBorderFixtureDef);
 
+	/* Add the kicker itself */
+	b2BodyDef									kickerDef;
+	kickerDef.type								= b2_staticBody;
+	kickerDef.position.Set(11 * FIELD_WIDTH / 12, (6 * FIELD_HEIGHT / 8) - (KICKER_HEIGHT/2));
+
+	kickerBody								= world.CreateBody(&kickerDef);
+
+	kickerBody->SetUserData(&kickerData);
+
+	b2PolygonShape kickerBox;
+	kickerBox.SetAsBox(KICKER_WIDTH/2, KICKER_HEIGHT/2);
+
+	b2FixtureDef								kickerFixtureDef;
+	kickerFixtureDef.shape						= &kickerBox;
+	kickerFixtureDef.density					= KICKER_DENSITY;
+	kickerFixtureDef.friction					= KICKER_FRICTION;
+	kickerFixtureDef.restitution				= KICKER_RESTITUTION;
+	kickerBody->CreateFixture(&kickerFixtureDef);
 
 	/* Add the game over field */
 	b2BodyDef									gameOverDef;
@@ -270,7 +296,7 @@ void Simulation::respawnBall(){
 	/* Init playing ball */
 	b2BodyDef									ballDef;
 	ballDef.type								= b2_dynamicBody;
-	ballDef.position.Set(1.5*(FIELD_WIDTH/2), (FIELD_HEIGHT/2));
+	ballDef.position.Set(11 * FIELD_WIDTH / 12, 4 * FIELD_HEIGHT / 8);
 	ballBody									= world.CreateBody(&ballDef);
 
 	ballBody->SetUserData(&ballData);

@@ -7,16 +7,30 @@
 #include <Box2D/Box2D.h>
 
 #include <functional>
+#include <random>
+#include <chrono>
+#include <stdio.h>
 
 #include "ContactListener.h"
 #include "UserData.h"
 #include "Simulation.h"
 
-const float ContactListener::KICKER_FORCE_X		= 0.0f;
-const float ContactListener::KICKER_FORCE_Y		= 1.0f;
+const float ContactListener::KICKER_FORCE_Y_MIN		= 0.013f;
+const float ContactListener::KICKER_FORCE_Y_MAX		= 0.02f;
 
 ContactListener::ContactListener(std::function<void(void)> gameOverCallback):
-	gameOverCallback(gameOverCallback){}
+	gameOverCallback(gameOverCallback), generator(seed()){}
+
+unsigned ContactListener::seed(){
+	return (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
+}
+
+float ContactListener::randomFloatInRange(const float &min, const float &max){
+	std::uniform_real_distribution<float>		distribution
+	= std::uniform_real_distribution<float>(min, max);
+
+	return distribution(generator);
+}
 
 void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold){
 
@@ -59,7 +73,7 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 			//TODO: otherObject->reward;
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_KICKER){
-			ball->ApplyForceToCenter(b2Vec2(KICKER_FORCE_X, KICKER_FORCE_Y), true);
+			ball->ApplyForceToCenter(b2Vec2(0.0f, randomFloatInRange(KICKER_FORCE_Y_MIN, KICKER_FORCE_Y_MAX)), true);
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_GAMEOVER){
 			//TODO: big negative reward

@@ -8,16 +8,22 @@
 #define SIM_CONTACTLISTENER_H_
 
 #include <functional>
+#include <random>
 
 #include <Box2D/Box2D.h>
 
 class ContactListener: public b2ContactListener{
 	private:
 
-		static const float KICKER_FORCE_X;
-		static const float KICKER_FORCE_Y;
+		static const float					KICKER_FORCE_Y_MIN;
+		static const float					KICKER_FORCE_Y_MAX;
 
-		std::function<void(void)> gameOverCallback;
+		std::function<void(void)>			gameOverCallback;
+
+		std::default_random_engine			generator;
+
+		unsigned seed();
+		float randomFloatInRange(const float &min, const float &max);
 
 	public:
 		ContactListener(std::function<void(void)> gameOverCallback);
