@@ -46,6 +46,7 @@ class Simulation{
 
 		static const float			FLIPPER_WIDTH;
 		static const float			FLIPPER_HEIGHT;
+		static const float			FLIPPER_APEX_HEIGHT;
 		static const float			FLIPPER_DENSITY;
 		static const float			FLIPPER_FRICTION;
 		static const float			FLIPPER_RESTITUTION;

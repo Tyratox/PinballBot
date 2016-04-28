@@ -37,8 +37,9 @@ const float			Simulation::BALL_DENSITY						= 0.0001f;
 const float			Simulation::BALL_FRICTION						= 0.01f;
 const float			Simulation::BALL_RESTITUTION					= 0.9f;
 
-const float			Simulation::FLIPPER_HEIGHT						= 0.04f;
+const float			Simulation::FLIPPER_HEIGHT						= 0.05f;
 const float			Simulation::FLIPPER_WIDTH						= 0.08f;
+const float			Simulation::FLIPPER_APEX_HEIGHT					= 0.03f;
 const float			Simulation::FLIPPER_DENSITY						= 0.0001f;
 const float			Simulation::FLIPPER_FRICTION					= 0.01f;
 const float			Simulation::FLIPPER_RESTITUTION					= 1.0f;
@@ -142,7 +143,7 @@ Simulation::Simulation():
 	b2Vec2 leftFlipperVertices[3];
 	leftFlipperVertices[0].Set(0.0f, 0.0f);
 	leftFlipperVertices[1].Set(0.0f, FLIPPER_HEIGHT);
-	leftFlipperVertices[2].Set(FLIPPER_WIDTH, FLIPPER_HEIGHT);
+	leftFlipperVertices[2].Set(FLIPPER_WIDTH, FLIPPER_APEX_HEIGHT);
 
 	flipperLeftTriangle.Set(leftFlipperVertices, 3);
 
@@ -150,7 +151,7 @@ Simulation::Simulation():
 	b2Vec2 rightFlipperVertices[3];
 	rightFlipperVertices[0].Set(0.0f, 0.0f);
 	rightFlipperVertices[1].Set(0.0f, FLIPPER_HEIGHT);
-	rightFlipperVertices[2].Set(-FLIPPER_WIDTH, FLIPPER_HEIGHT);
+	rightFlipperVertices[2].Set(-FLIPPER_WIDTH, FLIPPER_APEX_HEIGHT);
 
 	flipperRightTriangle.Set(rightFlipperVertices, 3);
 
