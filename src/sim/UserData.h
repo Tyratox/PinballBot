@@ -24,7 +24,10 @@ class UserData{
 		Type type;
 		int reward; /* The reward given on collision, zero if none */
 
-		UserData(Type type, int reward = 0);
+		bool filled;
+		int red, green, blue, alpha; //between 0 and 255
+
+		UserData(Type type, int reward = 0, bool filled = true, int red = 0, int green = 0, int blue = 0, int alpha = 255);
 };
 
 

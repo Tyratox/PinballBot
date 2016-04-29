@@ -65,15 +65,14 @@ Simulation::Simulation():
 	contactListener(std::bind(&Simulation::gameOver, this)),
 	gravity(GRAVITY_X, GRAVITY_Y),
 	world(this->gravity),
-	playingFieldBody(PLAYINGFIELD_VERTEX_NUMBER),
 	ballBody(NULL),
 	gameOverBody(NULL),
 	flipperLeftBody(NULL),
 	flipperRightBody(NULL),
 	borderData(UserData::PINBALL_BORDER),
 	ballData(UserData::PINBALL_BALL),
-	kickerData(UserData::PINBALL_KICKER),
-	gameOverData(UserData::PINBALL_GAMEOVER),
+	kickerData(UserData::PINBALL_KICKER, 0, true, 128, 128, 128, 255),
+	gameOverData(UserData::PINBALL_GAMEOVER, -100, true, 231, 76, 60, 100),
 	flipperData(UserData::PINBALL_FLIPPER){
 
 	/* Initializes a world with gravity pulling downwards and add contact listener */
@@ -153,7 +152,7 @@ Simulation::Simulation():
 	kickerFixtureDef.density					= KICKER_DENSITY;
 	kickerFixtureDef.friction					= KICKER_FRICTION;
 	kickerFixtureDef.restitution				= KICKER_RESTITUTION;
-	kickerBody->CreateFixture(&kickerFixtureDef);
+	this->kickerBody->CreateFixture(&kickerFixtureDef);
 
 	/* Add the game over field */
 	b2BodyDef									gameOverDef;
@@ -166,7 +165,7 @@ Simulation::Simulation():
 
 	b2PolygonShape gameOverBox;
 	gameOverBox.SetAsBox(GAME_OVER_WIDTH/2, GAME_OVER_HEIGHT/2);
-	gameOverBody->CreateFixture(&gameOverBox, 0.0f);
+	this->gameOverBody->CreateFixture(&gameOverBox, 0.0f);
 
 	/* Add the two flippers */
 	b2BodyDef									flipperLeftDef;
@@ -220,16 +219,16 @@ Simulation::Simulation():
 	b2RevoluteJointDef							flipperLeftRevJointDef;
 	b2RevoluteJointDef							flipperRightRevJointDef;
 
-	flipperLeftRevJointDef.bodyA				= playingFieldBody[11];
+	flipperLeftRevJointDef.bodyA				= playingFieldBody;
 	flipperLeftRevJointDef.bodyB				= flipperLeftBody;
 
-	flipperRightRevJointDef.bodyA				= playingFieldBody[14];
+	flipperRightRevJointDef.bodyA				= playingFieldBody;
 	flipperRightRevJointDef.bodyB				= flipperRightBody;
 
-	flipperLeftRevJointDef.localAnchorA			= b2Vec2(0.0f, 0.0f);
+	flipperLeftRevJointDef.localAnchorA			= playingFieldVertices[11];
 	flipperLeftRevJointDef.localAnchorB			= b2Vec2(0.0f, 0.0f);
 
-	flipperRightRevJointDef.localAnchorA		= b2Vec2(0.0f, 0.0f);
+	flipperRightRevJointDef.localAnchorA		= playingFieldVertices[14];
 	flipperRightRevJointDef.localAnchorB		= b2Vec2(0.0f, 0.0f);
 
 	flipperLeftRevJointDef.collideConnected		= flipperRightRevJointDef.collideConnected			= false;
@@ -254,36 +253,38 @@ Simulation::Simulation():
 	respawnBall();
 }
 
+const b2World* Simulation::getWorld(){
+	return &world;
+}
+
 void Simulation::drawPlayingField(const b2Vec2* points){
-	for(int i=0;i<PLAYINGFIELD_VERTEX_NUMBER-1;i++){
 
-		/*
-		 * The world object does not keep a reference to the body definition.
-		 */
-		b2BodyDef	def;
-		def.type					=	b2_staticBody;
-		def.position.Set(points[i].x, points[i].y);
+	/*
+	 * The world object does not keep a reference to the body definition.
+	 */
+	b2BodyDef						def;
+	def.type					=	b2_staticBody;
+	def.position.Set(0.0f, 0.0f);
 
-		playingFieldBody[i]				= world.CreateBody(&def);
+	playingFieldBody				= world.CreateBody(&def);
 
-		playingFieldBody[i]->SetUserData(&borderData);
+	playingFieldBody->SetUserData(&borderData);
 
-		/*
-		 * Factories do not retain references to the definitions.
-		 * So you can create definitions on the stack and keep them in temporary resources.
-		 */
-		b2EdgeShape edge;
-		edge.Set(b2Vec2(0.0f, 0.0f), points[i+1]-points[i]);
+	/*
+	 * Factories do not retain references to the definitions.
+	 * So you can create definitions on the stack and keep them in temporary resources.
+	 */
+	b2ChainShape chain;
+	chain.CreateChain(points, PLAYINGFIELD_VERTEX_NUMBER);
 
-		b2FixtureDef								borderFixtureDef;
-		borderFixtureDef.shape						= &edge;
-		borderFixtureDef.density					= BORDER_DENSITY;
-		borderFixtureDef.friction					= BORDER_FRICTION;
-		borderFixtureDef.restitution				= BORDER_RESTITUTION;
+	b2FixtureDef								borderFixtureDef;
+	borderFixtureDef.shape						= &chain;
+	borderFixtureDef.density					= BORDER_DENSITY;
+	borderFixtureDef.friction					= BORDER_FRICTION;
+	borderFixtureDef.restitution				= BORDER_RESTITUTION;
 
-		playingFieldBody[i]->CreateFixture(&borderFixtureDef);
+	this->playingFieldBody->CreateFixture(&borderFixtureDef);
 
-	}
 }
 
 void Simulation::respawnBall(){
@@ -324,14 +325,6 @@ void Simulation::step(const float32 &time_step){
 		isGameOver = false;
 	}
 	world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-}
-
-void Simulation::setRenderer(b2Draw* draw){
-	this->world.SetDebugDraw( draw );
-}
-
-void Simulation::render(){
-	this->world.DrawDebugData();
 }
 
 void Simulation::enableLeftFlipper(){

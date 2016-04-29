@@ -45,17 +45,11 @@ void capFramerate(void) {
 
 void runSimulation(){
 
-	Simulation 		sim;
-	Renderer				r(320, 640);
+	Simulation 				sim;
+	Renderer				r(320, 640, sim.getWorld());
 	SDL_Event				e;
 
 	std::vector<Action> actions = ActionsSim::actionsAvailable(sim);
-
-	if(RENDER){
-		r.SetFlags( b2Draw::e_shapeBit );
-
-		sim.setRenderer(&r);
-	}
 
 	while(!quit){
 
@@ -85,9 +79,7 @@ void runSimulation(){
 		sim.step(TIME_STEP);
 
 		if(RENDER){
-			sim.render();
-
-			r.redraw();
+			r.render();
 			//sim.debugPlayingBall();
 			//sim.getCurrentState();
 			capFramerate();

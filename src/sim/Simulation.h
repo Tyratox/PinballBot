@@ -78,7 +78,7 @@ class Simulation{
 		b2World											world;
 
 		//The playing field
-		std::vector<b2Body*>							playingFieldBody;
+		b2Body*											playingFieldBody;
 
 		//Kicker border
 		b2Body*											kickerBorderBody;
@@ -118,6 +118,11 @@ class Simulation{
 		Simulation();
 
 		/**
+		 * Returns a reference to the Box2D world
+		 */
+		const b2World* getWorld();
+
+		/**
 		 * Draws the playing field
 		 * @param	points		b2Vec2*		Array of points to connect by creating EdgeShapes
 		 * @return				void
@@ -142,20 +147,6 @@ class Simulation{
 		 * @return	void
 		 */
 		void step(const float32 &time_step);
-
-		/**
-		 * Sets the DebugDraw renderer of the Box2D world
-		 * @param	draw		b2Draw		A pointer to a class implementing the b2Draw functions
-		 * @return	void
-		 */
-		void setRenderer(b2Draw* draw);
-
-		/**
-		 * Renders the scene by calling the DrawDebugData function inside the Box2D world,
-		 * which calls back to the initially set b2Draw class
-		 * @return	void
-		 */
-		void render();
 
 		/**
 		 * Activates the left hand flipper. Will stay active until disableLeftFlipper() is called

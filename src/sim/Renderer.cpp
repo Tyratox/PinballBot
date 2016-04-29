@@ -5,6 +5,7 @@
  */
 
 #include <vector>
+#include <stdio.h>
 
 #include <Box2D/Box2D.h>
 
@@ -14,6 +15,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include "Renderer.h"
+#include "UserData.h"
 
 const float Renderer::NUMERATOR				= 7.0f;
 const float Renderer::DENOMINATOR			= 9.0f;
@@ -32,9 +34,9 @@ b2Vec2 Renderer::toScreenCoords(const b2Vec2 &position){
 	);
 }
 
-Renderer::Renderer(int width, int height) : width(width), height(height){
+Renderer::Renderer(int width, int height, const b2World *world) : width(width), height(height), world(world){
 
-	SDL_Init( /*SDL_INIT_EVERYTHING*/SDL_INIT_VIDEO );
+	SDL_Init( SDL_INIT_VIDEO );
 
 	window = SDL_CreateWindow(
 		"PinballBot",						// window title
@@ -68,6 +70,53 @@ Renderer::~Renderer(){
 	SDL_Quit();
 }
 
+void Renderer::render(){
+
+	for(const b2Body *body = this->world->GetBodyList(); body; body = body->GetNext()){
+
+		UserData *userData = (UserData*) body->GetUserData();
+		if(!userData){
+			printf("DIDN'T DRAW! Body Position: X(%f), Y(%f); Type: N/A\n", body->GetPosition().x, body->GetPosition().y);
+		}
+
+		for(const b2Fixture *fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext()){
+
+			b2Shape::Type shapeType = fixture->GetType();
+
+			if (shapeType == b2Shape::e_circle ){
+			    b2CircleShape* circleShape = (b2CircleShape*)fixture->GetShape();
+
+			    this->drawCircle(body->GetPosition(), circleShape->m_radius, userData->red, userData->green, userData->blue, userData->alpha, userData->filled);
+			}else if (shapeType == b2Shape::e_polygon ){
+			    b2PolygonShape* polygonShape = (b2PolygonShape*)fixture->GetShape();
+
+			    const b2Vec2 *vertices_orig = polygonShape->m_vertices;
+
+			    std::vector<b2Vec2> vertices(polygonShape->GetVertexCount());
+			    for(int i=0;i < polygonShape->GetVertexCount();i++){
+			    	vertices[i] = body->GetWorldPoint(vertices_orig[i]);
+			    }
+
+			    this->drawPolygon(vertices.data(), polygonShape->GetVertexCount(), userData->red, userData->green, userData->blue, userData->alpha, userData->filled);
+			}else if(shapeType == b2Shape::e_edge ){
+				 b2EdgeShape* edgeShape = (b2EdgeShape*)fixture->GetShape();
+
+				 drawLine(body->GetWorldPoint(edgeShape->m_vertex1), body->GetWorldPoint(edgeShape->m_vertex2), userData->red, userData->green, userData->blue, userData->alpha);
+			}else if(shapeType == b2Shape::e_chain){
+				 b2ChainShape* chainShape = (b2ChainShape*)fixture->GetShape();
+
+				 for(int j=0;j < (chainShape->m_count - 1);j++){
+					 drawLine(body->GetWorldPoint(chainShape->m_vertices[j]), body->GetWorldPoint(chainShape->m_vertices[j+1]), userData->red, userData->green, userData->blue, userData->alpha);
+				 }
+			}else{
+				printf("Unknown shapeType: %d!", shapeType);
+			}
+		}
+	}
+
+	this->redraw();
+}
+
 void Renderer::redraw(){
 
 	SDL_RenderPresent(renderer);
@@ -76,7 +125,14 @@ void Renderer::redraw(){
 	SDL_RenderClear(renderer);
 }
 
-void Renderer::dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
+void Renderer::drawLine(const b2Vec2& p1, const b2Vec2& p2, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha){
+	b2Vec2 from = toScreenCoords(p1);
+	b2Vec2 to = toScreenCoords(p2);
+
+	lineRGBA(renderer, (Sint16) from.x, (Sint16) from.y, (Sint16) to.x, (Sint16) to.y, red, green, blue, alpha);
+}
+
+void Renderer::drawPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
 	std::vector<short> x(vertexCount);
 	std::vector<short> y(vertexCount);
 
@@ -94,7 +150,7 @@ void Renderer::dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Ui
 	}
 }
 
-void Renderer::dCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
+void Renderer::drawCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled){
 	b2Vec2 coords = toScreenCoords(center);
 
 	if(filled){
@@ -102,27 +158,4 @@ void Renderer::dCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 gr
 	}else{
 		circleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
 	}
-}
-
-void Renderer::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-	dPolygon(vertices, vertexCount, 0, 0, 0, 255, false);
-}
-void Renderer::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-	dPolygon(vertices, vertexCount, 0, 0, 0, 255, true);
-}
-
-void Renderer::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
-	dCircle(center, radius, 0, 0, 0, 255, false);
-}
-void Renderer::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
-	dCircle(center, radius, 0, 0, 0, 255, true);
-}
-
-void Renderer::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) {
-	b2Vec2 from = toScreenCoords(p1);
-	b2Vec2 to = toScreenCoords(p2);
-
-	lineRGBA(renderer, (Sint16) from.x, (Sint16) from.y, (Sint16) to.x, (Sint16) to.y, 0, 0, 0, 255);
-}
-void Renderer::DrawTransform(const b2Transform& xf) {
 }

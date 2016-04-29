@@ -16,7 +16,7 @@
 
 #include <SDL2/SDL2_gfxPrimitives.h>
 
-class Renderer : public b2Draw{
+class Renderer{
 
 	private:
 
@@ -31,8 +31,10 @@ class Renderer : public b2Draw{
 
 		int		oneMeterInPX;
 
-		SDL_Window*		window;
-		SDL_Renderer*	renderer;
+		SDL_Window		*window;
+		SDL_Renderer	*renderer;
+
+		const b2World	*world; //stores a pointer to the Box2D world
 
 		/**
 		 * Converts Box2D meters into screen pixels
@@ -53,7 +55,7 @@ class Renderer : public b2Draw{
 		/**
 		 * Inits all required values based on the given window width/height and the DPI
 		 */
-		Renderer(int width, int height);
+		Renderer(int width, int height, const b2World *world);
 
 		/**
 		 * Uses SDL functions to remove objects
@@ -61,10 +63,27 @@ class Renderer : public b2Draw{
 		~Renderer();
 
 		/**
+		 * Renders the Box2D world
+		 */
+		void render();
+
+		/**
 		 * Redraws the scene onto the window
 		 * @return	void
 		 */
 		void redraw();
+
+		/**
+		 * Draws a line
+		 * @param	p1				b2Vec2		The first point of the line
+		 * @param	p2				b2Vec2		The second point of the line
+		 * @param	red				Uint8		The amount of red	in the color
+		 * @param	green			Uint8		The amount of green	in the color
+		 * @param	blue			Uint8		The amount of blue	in the color
+		 * @param	alpha			Uint8		The opacity of the color
+		 * @return	void
+		 */
+		void drawLine(const b2Vec2& p1, const b2Vec2& p2, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha);
 
 		/**
 		 * Draws a polygon
@@ -77,7 +96,7 @@ class Renderer : public b2Draw{
 		 * @param	filled			bool		Draw a filled polygon or just the outlines?
 		 * @return	void
 		 */
-		void dPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled);
+		void drawPolygon(const b2Vec2* vertices, int32 vertexCount, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled);
 
 		/**
 		 * Draws a circle
@@ -90,20 +109,7 @@ class Renderer : public b2Draw{
 		 * @param	filled			bool		Draw a filled polygon or just the outlines?
 		 * @return	void
 		 */
-		void dCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled);
-
-		/**
-		 * Implements the b2Draw functions
-		 */
-
-		void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
-		void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
-
-		void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color);
-		void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color);
-
-		void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color);
-		void DrawTransform(const b2Transform& xf);
+		void drawCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled);
 
 };
 
