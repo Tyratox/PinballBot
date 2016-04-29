@@ -24,6 +24,7 @@ const float					TICK_INTERVAL		= 1000.0f / FPS;
 
 const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
 
+bool						pause				= false;
 bool						quit				= false;
 
 static Uint32				next_time			= 0;
@@ -60,7 +61,6 @@ void runSimulation(){
 					quit = true;
 				}
 
-				/* Just for debugging purposes */
 				if (KEYS[SDL_SCANCODE_LEFT]){
 					sim.enableLeftFlipper();
 				}else{
@@ -73,16 +73,27 @@ void runSimulation(){
 					sim.disableRightFlipper();
 				}
 
+				if (KEYS[SDL_SCANCODE_SPACE]){
+					pause = true;
+				}else{
+					pause = false;
+				}
+
 			}
 		}
 
-		sim.step(TIME_STEP);
+		if(!pause){
 
-		if(RENDER){
-			r.render();
-			//sim.debugPlayingBall();
-			//sim.getCurrentState();
-			capFramerate();
+			sim.step(TIME_STEP);
+
+				if(RENDER){
+					r.render();
+					//sim.debugPlayingBall();
+					//sim.getCurrentState();
+					capFramerate();
+				}
+		}else{
+			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}
 	}
 }
