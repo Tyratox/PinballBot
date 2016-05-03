@@ -15,8 +15,8 @@
 #include "UserData.h"
 #include "Simulation.h"
 
-const float ContactListener::KICKER_FORCE_Y_MIN		= 0.013f;
-const float ContactListener::KICKER_FORCE_Y_MAX		= 0.02f;
+const float ContactListener::KICKER_FORCE_Y_MIN		= 0.00075f;
+const float ContactListener::KICKER_FORCE_Y_MAX		= 0.001f;
 
 ContactListener::ContactListener(std::function<void(void)> gameOverCallback):
 	gameOverCallback(gameOverCallback), generator(seed()){}

@@ -44,7 +44,7 @@ const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
 const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
 
 const float			Simulation::BALL_WEIGHT							= 0.08f; //80 g
-const float			Simulation::BALL_RADIUS							= 0.025f; // 25 mm
+const float			Simulation::BALL_RADIUS							= 0.0125f; // 12.5 mm
 const float			Simulation::BALL_DENSITY						= (BALL_RADIUS*BALL_RADIUS*b2_pi)/BALL_WEIGHT;
 const float			Simulation::BALL_FRICTION						= 0.01f;
 const float			Simulation::BALL_RESTITUTION					= 0.5f;
