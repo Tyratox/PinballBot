@@ -5,20 +5,28 @@
  */
 
 #include <vector>
+#include <chrono>
+#include <math.h>
 
 #include "Agent.h"
 #include "Policy.h"
 #include "State.h"
 #include "../action/Action.h"
 
+Agent::Agent(std::vector<Action> availableActions, Policy policy):
+	availableActions(availableActions), policy(policy), generator(seed()){
 
-unsigned int Agent::seed(){
-	return (unsigned int) rand();//FIXME not the best solution but works for now.
+}
+
+void Agent::think(State state){
+
+}
+
+unsigned Agent::seed(){
+	return (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
 }
 
 float Agent::randomFloatInRange(const float &min, const float &max){
-	std::default_random_engine					generator(seed());
-
 	std::uniform_real_distribution<float>		distribution
 	= std::uniform_real_distribution<float>(min, max);
 
@@ -26,12 +34,17 @@ float Agent::randomFloatInRange(const float &min, const float &max){
 }
 
 int Agent::randomIntInRange(const int &min, const int &max){
-	std::default_random_engine					generator(seed());
-
 	std::uniform_int_distribution<int>		distribution
 		= std::uniform_int_distribution<int>(min, max);
 
 	return distribution(generator);
+}
+
+State Agent::softmax(std::vector<State> states, unsigned long temperature){
+	std::vector<double> probabilities(states.size());
+	for(int i=0;i<states.size();i++){
+		//probabilities[i] = ();
+	}
 }
 
 State Agent::epsilonGreedy(std::vector<State> states, const float &epsilon){
@@ -71,12 +84,4 @@ State Agent::greedy(std::vector<State> states){
 
 State Agent::random(const std::vector<State> &states){
 	return states[randomIntInRange(0, states.size()-1)];
-}
-
-Agent::Agent(std::vector<Action> availableActions, Policy policy) : availableActions(availableActions), policy(policy){
-
-}
-
-void Agent::think(State s){
-
 }
