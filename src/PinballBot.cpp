@@ -79,6 +79,10 @@ void runSimulation(){
 					pause = false;
 				}
 
+				if (KEYS[SDL_SCANCODE_P]){
+					sim.generatePinField();
+				}
+
 			}
 		}
 

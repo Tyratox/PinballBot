@@ -29,17 +29,17 @@ const float			Simulation::FIELD_HEIGHT						= 1.0f;
 const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
 const float			Simulation::GRAVITY_X							= 0;
-const float			Simulation::GRAVITY_Y							= std::sin(FIELD_SLOPE) * 9.81f; /* positive, cause we start in the top left corner */
+const float			Simulation::GRAVITY_Y							= std::sin(FIELD_SLOPE) * (9.81f - 2.81/*MAAGIC*/); /* positive, cause we start in the top left corner */
 
 const float			Simulation::BORDER_DENSITY						= 0.0f;
-const float			Simulation::BORDER_FRICTION						= 1.0f;
-const float			Simulation::BORDER_RESTITUTION					= 0.01f;
+const float			Simulation::BORDER_FRICTION						= 10.0f;
+const float			Simulation::BORDER_RESTITUTION					= 0.001f;
 
 const int			Simulation::PIN_COUNT							= 4;
 const float			Simulation::PIN_RADIUS							= 0.0075f; //7.5 mm
 const float			Simulation::PIN_DENSITY							= 0.0f;
-const float			Simulation::PIN_FRICTION						= 1.0f;
-const float			Simulation::PIN_RESTITUTION						= 0.01f;
+const float			Simulation::PIN_FRICTION						= 0.01f;
+const float			Simulation::PIN_RESTITUTION						= 1.5f;
 
 const float			Simulation::PIN_BOUNDARY_X_MIN					= 0.2f * FIELD_WIDTH;
 const float			Simulation::PIN_BOUNDARY_X_MAX					= 0.8f * FIELD_WIDTH;
@@ -47,11 +47,11 @@ const float			Simulation::PIN_BOUNDARY_X_MAX					= 0.8f * FIELD_WIDTH;
 const float			Simulation::PIN_BOUNDARY_Y_MIN					= 0.0f;
 const float			Simulation::PIN_BOUNDARY_Y_MAX					= 0.5f * FIELD_HEIGHT;
 
-const float			Simulation::KICKER_WIDTH						= FIELD_WIDTH / 12;
+const float			Simulation::KICKER_WIDTH						= FIELD_WIDTH / 8;
 const float			Simulation::KICKER_HEIGHT						= 0.01;
 const float			Simulation::KICKER_DENSITY						= 0.0f;
-const float			Simulation::KICKER_FRICTION						= 1.0f;
-const float			Simulation::KICKER_RESTITUTION					= 0.3f;
+const float			Simulation::KICKER_FRICTION						= 10.0f;
+const float			Simulation::KICKER_RESTITUTION					= 0.1f;
 
 const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
 const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
@@ -337,6 +337,12 @@ void Simulation::generatePinField(){
 	int pins_generated = 0;
 	b2Vec2 v;
 	bool add;
+
+	for(int i=0;i<this->pinBodies.size();i++){
+		if(pinBodies[i]){
+			world.DestroyBody(pinBodies[i]);
+		}
+	}
 
 	std::vector<b2Vec2> pins(PIN_COUNT);
 	this->pinBodies	= std::vector<b2Body*>(PIN_COUNT);
