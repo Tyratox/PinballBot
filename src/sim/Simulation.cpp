@@ -11,6 +11,7 @@
 #include <vector>
 #include <cmath>
 #include <functional>
+#include <random>
 
 #include "../agent/Ball.h"
 #include "../agent/State.h"
@@ -34,6 +35,18 @@ const float			Simulation::BORDER_DENSITY						= 0.0f;
 const float			Simulation::BORDER_FRICTION						= 1.0f;
 const float			Simulation::BORDER_RESTITUTION					= 0.01f;
 
+const int			Simulation::PIN_COUNT							= 4;
+const float			Simulation::PIN_RADIUS							= 0.0075f; //7.5 mm
+const float			Simulation::PIN_DENSITY							= 0.0f;
+const float			Simulation::PIN_FRICTION						= 1.0f;
+const float			Simulation::PIN_RESTITUTION						= 0.01f;
+
+const float			Simulation::PIN_BOUNDARY_X_MIN					= 0.2f * FIELD_WIDTH;
+const float			Simulation::PIN_BOUNDARY_X_MAX					= 0.8f * FIELD_WIDTH;
+
+const float			Simulation::PIN_BOUNDARY_Y_MIN					= 0.0f;
+const float			Simulation::PIN_BOUNDARY_Y_MAX					= 0.5f * FIELD_HEIGHT;
+
 const float			Simulation::KICKER_WIDTH						= FIELD_WIDTH / 12;
 const float			Simulation::KICKER_HEIGHT						= 0.01;
 const float			Simulation::KICKER_DENSITY						= 0.0f;
@@ -44,16 +57,16 @@ const float			Simulation::GAME_OVER_WIDTH						= (2 * FIELD_HEIGHT/8);
 const float			Simulation::GAME_OVER_HEIGHT					= 0.01f;
 
 const float			Simulation::BALL_WEIGHT							= 0.08f; //80 g
-const float			Simulation::BALL_RADIUS							= 0.0125f; // 12.5 mm
+const float			Simulation::BALL_RADIUS							= 0.0125f; //12.5 mm
 const float			Simulation::BALL_DENSITY						= (BALL_RADIUS*BALL_RADIUS*b2_pi)/BALL_WEIGHT;
-const float			Simulation::BALL_FRICTION						= 0.01f;
+const float			Simulation::BALL_FRICTION						= 0.5f;
 const float			Simulation::BALL_RESTITUTION					= 0.5f;
 
 const float			Simulation::FLIPPER_HEIGHT						= 0.05f;
 const float			Simulation::FLIPPER_WIDTH						= 0.085f;
 const float			Simulation::FLIPPER_APEX_HEIGHT					= 0.03f;
 const float			Simulation::FLIPPER_DENSITY						= 100.0f;
-const float			Simulation::FLIPPER_FRICTION					= 0.5f;
+const float			Simulation::FLIPPER_FRICTION					= 5.0f;
 const float			Simulation::FLIPPER_RESTITUTION					= 0.75f;
 const float			Simulation::FLIPPER_REV_JOINT_LOWER_ANGLE		= (float) 0.0f * b2_pi;
 const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.2f * b2_pi;
@@ -250,6 +263,7 @@ Simulation::Simulation():
 	flipperLeftRevJoint							= (b2RevoluteJoint*)this->world.CreateJoint(&flipperLeftRevJointDef);
 	flipperRightRevJoint						= (b2RevoluteJoint*)this->world.CreateJoint(&flipperRightRevJointDef);
 
+	generatePinField();
 	respawnBall();
 }
 
@@ -313,6 +327,57 @@ void Simulation::respawnBall(){
 	ballFixtureDef.restitution					= BALL_RESTITUTION;
 
 	this->ballBody->CreateFixture(&ballFixtureDef);
+}
+
+void Simulation::generatePinField(){
+	std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+	std::uniform_real_distribution<float> distribution_X = std::uniform_real_distribution<float>(PIN_BOUNDARY_X_MIN, PIN_BOUNDARY_X_MAX);
+	std::uniform_real_distribution<float> distribution_Y = std::uniform_real_distribution<float>(PIN_BOUNDARY_Y_MIN, PIN_BOUNDARY_Y_MAX);
+
+	int pins_generated = 0;
+	b2Vec2 v;
+	bool add;
+
+	std::vector<b2Vec2> pins(PIN_COUNT);
+	this->pinBodies	= std::vector<b2Body*>(PIN_COUNT);
+	this->pinData	= std::vector<UserData>(PIN_COUNT);
+
+	b2BodyDef									pinDef;
+	pinDef.type									= b2_staticBody;
+
+	b2CircleShape								pinSphere;
+	pinSphere.m_p.Set(0.0f, 0.0f);
+	pinSphere.m_radius							= PIN_RADIUS;
+
+	b2FixtureDef								pinFixtureDef;
+	pinFixtureDef.shape							= &pinSphere;
+	pinFixtureDef.density						= PIN_DENSITY;
+	pinFixtureDef.friction						= PIN_FRICTION;
+	pinFixtureDef.restitution					= PIN_RESTITUTION;
+
+	while(pins_generated < PIN_COUNT){
+
+		v		= b2Vec2(distribution_X(generator), distribution_Y(generator));
+		add		= true;
+
+		for(int i=0;i<pins_generated;i++){
+			if((pins[i] - v).Length() <= 6 * PIN_RADIUS){
+				add = false;
+				break;
+			}
+		}
+
+		if(add){
+			//if it's the last one and is still valid add it
+			pinDef.position.Set(v.x, v.y);
+			this->pinBodies[pins_generated] = world.CreateBody(&pinDef);
+			this->pinData[pins_generated]	= UserData(UserData::PINBALL_PIN, 1, true, 0, 0, 0);
+			this->pinBodies[pins_generated]->SetUserData(&this->pinData[pins_generated]);
+			this->pinBodies[pins_generated]->CreateFixture(&pinFixtureDef);
+			pins_generated++;
+		}
+
+	}
 }
 
 void Simulation::gameOver(){

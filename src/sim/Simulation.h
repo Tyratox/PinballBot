@@ -41,6 +41,18 @@ class Simulation{
 		static const float			BORDER_FRICTION;
 		static const float			BORDER_RESTITUTION;
 
+		static const int			PIN_COUNT;
+		static const float			PIN_RADIUS;
+		static const float			PIN_DENSITY;
+		static const float			PIN_FRICTION;
+		static const float			PIN_RESTITUTION;
+
+		static const float			PIN_BOUNDARY_X_MIN;
+		static const float			PIN_BOUNDARY_X_MAX;
+
+		static const float			PIN_BOUNDARY_Y_MIN;
+		static const float			PIN_BOUNDARY_Y_MAX;
+
 		static const float			KICKER_WIDTH;
 		static const float			KICKER_HEIGHT;
 		static const float			KICKER_DENSITY;
@@ -80,6 +92,9 @@ class Simulation{
 		//The playing field
 		b2Body*											playingFieldBody;
 
+		//The pin bodies
+		std::vector<b2Body*>							pinBodies;
+
 		//Kicker border
 		b2Body*											kickerBorderBody;
 
@@ -104,6 +119,7 @@ class Simulation{
 		bool											isGameOver;
 
 		UserData										borderData;
+		std::vector<UserData>							pinData;
 		UserData										ballData;
 		UserData										kickerData;
 		UserData										gameOverData;
@@ -134,6 +150,12 @@ class Simulation{
 		 * @return void
 		 */
 		void respawnBall();
+
+		/**
+		 * (Re-)Generates the pin field
+		 * @return void
+		 */
+		void generatePinField();
 
 		/**
 		 * Function executed by the contact listener on game over

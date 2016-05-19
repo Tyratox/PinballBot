@@ -15,8 +15,8 @@
 #include "UserData.h"
 #include "Simulation.h"
 
-const float ContactListener::KICKER_FORCE_Y_MIN		= 0.00075f;
-const float ContactListener::KICKER_FORCE_Y_MAX		= 0.001f;
+const float ContactListener::KICKER_FORCE_Y_MIN		= 0.002f;
+const float ContactListener::KICKER_FORCE_Y_MAX		= 0.003f;
 
 ContactListener::ContactListener(std::function<void(void)> gameOverCallback):
 	gameOverCallback(gameOverCallback), generator(seed()){}
@@ -69,8 +69,8 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 			return;
 		}
 
-		if(otherObject_data->type == UserData::PINBALL_PINS){
-			//TODO: otherObject->reward;
+		if(otherObject_data->type == UserData::PINBALL_PIN){
+			//std::printf("Reward: %d\n", otherObject_data->reward);
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_KICKER){
 			ball->ApplyForceToCenter(b2Vec2(0.0f, randomFloatInRange(KICKER_FORCE_Y_MIN, KICKER_FORCE_Y_MAX)), true);

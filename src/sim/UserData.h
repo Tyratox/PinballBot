@@ -14,10 +14,10 @@ class UserData{
 
 		enum Type{
 			PINBALL_BORDER,
+			PINBALL_PIN,
 			PINBALL_BALL,
 			PINBALL_FLIPPER,
 			PINBALL_KICKER,
-			PINBALL_PINS,
 			PINBALL_GAMEOVER
 		};
 
@@ -27,7 +27,7 @@ class UserData{
 		bool filled;
 		int red, green, blue, alpha; //between 0 and 255
 
-		UserData(Type type, int reward = 0, bool filled = true, int red = 0, int green = 0, int blue = 0, int alpha = 255);
+		UserData(Type type = PINBALL_BORDER, int reward = 0, bool filled = true, int red = 0, int green = 0, int blue = 0, int alpha = 255);
 };
 
 
