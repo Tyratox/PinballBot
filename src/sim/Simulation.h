@@ -12,7 +12,6 @@
 #include <vector>
 #include <cmath>
 
-#include "../agent/Ball.h"
 #include "../agent/State.h"
 
 #include "ContactListener.h"

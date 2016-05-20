@@ -5,12 +5,12 @@
  */
 
 #include "State.h"
-#include "Ball.h"
 
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <random>
+#include <Box2D/Box2D.h>
 
 
 float State::roundFloat(const int &precision, const float &number){
@@ -22,15 +22,12 @@ b2Vec2 State::reduceVectorPrecision(const int &precision, const b2Vec2 &vec){
 }
 
 void State::reduceStatePrecision(const int &precision){
-	ball.setPosition(reduceVectorPrecision(precision, ball.getPosition()));
-	ball.setVelocity(reduceVectorPrecision(precision, ball.getVelocity()));
+	position = reduceVectorPrecision(precision, position);
+	velocity = reduceVectorPrecision(precision, velocity);
 }
 
-State::State(Ball ball, bool isLeftFlipperActive, bool isRightFlipperActive) : isLeftFlipperActive(isLeftFlipperActive), isRightFlipperActive(isRightFlipperActive){
-	this->ball = ball;
+State::State(b2Vec2 position, b2Vec2 velocity, bool isLeftFlipperActive, bool isRightFlipperActive) : position(position), velocity(velocity), isLeftFlipperActive(isLeftFlipperActive), isRightFlipperActive(isRightFlipperActive){
 	reduceStatePrecision(2);
-
-	std::cout << this->ball.getPosition().x << " " << this->ball.getPosition().y << std::endl;
 }
 
 float State::getReward(){

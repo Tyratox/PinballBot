@@ -7,18 +7,18 @@
 #ifndef AGENT_STATE_H_
 #define AGENT_STATE_H_
 
-#include "Ball.h"
-
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <random>
+#include <Box2D/Box2D.h>
 
 class State{
 
 	private:
 
-		Ball ball;
+		b2Vec2 position;
+		b2Vec2 velocity;
 
 		bool isLeftFlipperActive;
 		bool isRightFlipperActive;
@@ -55,7 +55,7 @@ class State{
 		 * @param	isLeftFlipperActive		bool		If the left		flipper currently is active
 		 * @param	isRightFlipperActive	bool		If the right	flipper currently is active
 		 */
-		State(Ball ball, bool isLeftFlipperActive, bool isRightFlipperActive);
+		State(b2Vec2 position = b2Vec2(0, 0), b2Vec2 velocity = b2Vec2(0, 0), bool isLeftFlipperActive = false, bool isRightFlipperActive = false);
 
 		/**
 		 * Gets the expected reward based on a lookup table and the model of the environment

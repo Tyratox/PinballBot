@@ -13,7 +13,6 @@
 #include <functional>
 #include <random>
 
-#include "../agent/Ball.h"
 #include "../agent/State.h"
 
 #include "Simulation.h"
@@ -422,5 +421,5 @@ void Simulation::debugPlayingBall(){
 }
 
 State Simulation::getCurrentState(){
-	return State(Ball(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity()), flipperLeftRevJoint->IsMotorEnabled(), flipperRightRevJoint->IsMotorEnabled());
+	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity(), flipperLeftRevJoint->IsMotorEnabled(), flipperRightRevJoint->IsMotorEnabled());
 }
