@@ -23,6 +23,8 @@ class State{
 		bool isLeftFlipperActive;
 		bool isRightFlipperActive;
 
+		float reward;
+
 		/**
 		 * Reduces the precision of a floating point number in order to reduce the data load
 		 * @param	precision	int			The amount of decimal places to round to
@@ -55,7 +57,7 @@ class State{
 		 * @param	isLeftFlipperActive		bool		If the left		flipper currently is active
 		 * @param	isRightFlipperActive	bool		If the right	flipper currently is active
 		 */
-		State(b2Vec2 position = b2Vec2(0, 0), b2Vec2 velocity = b2Vec2(0, 0), bool isLeftFlipperActive = false, bool isRightFlipperActive = false);
+		State(b2Vec2 position = b2Vec2(0, 0), b2Vec2 velocity = b2Vec2(0, 0), bool isLeftFlipperActive = false, bool isRightFlipperActive = false, float reward = 0);
 
 		/**
 		 * Gets the expected reward based on a lookup table and the model of the environment

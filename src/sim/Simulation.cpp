@@ -74,7 +74,7 @@ const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 10 * b2_pi; /* ra
 const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
 
 Simulation::Simulation():
-	contactListener(std::bind(&Simulation::gameOver, this)),
+	contactListener(std::bind(&Simulation::gameOver, this), std::bind(&Simulation::getReward, this, std::placeholders::_1)),
 	gravity(GRAVITY_X, GRAVITY_Y),
 	world(this->gravity),
 	ballBody(NULL),
@@ -387,6 +387,10 @@ void Simulation::generatePinField(){
 
 void Simulation::gameOver(){
 	isGameOver = true;
+}
+
+void Simulation::getReward(float reward){
+	std::printf("GOT A REWARD OF %f\n", reward);
 }
 
 void Simulation::step(const float32 &time_step){

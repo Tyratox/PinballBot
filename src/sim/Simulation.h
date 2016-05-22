@@ -163,6 +163,13 @@ class Simulation{
 		void gameOver();
 
 		/**
+		 * Function executed if a reward is received
+		 * @return void
+		 */
+
+		void getReward(float reward = 0.0f);
+
+		/**
 		 * Steps a specific value forward in time
 		 * @param	time_step	float32		The amount of time to step
 		 * @return	void

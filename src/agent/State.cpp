@@ -26,13 +26,12 @@ void State::reduceStatePrecision(const int &precision){
 	velocity = reduceVectorPrecision(precision, velocity);
 }
 
-State::State(b2Vec2 position, b2Vec2 velocity, bool isLeftFlipperActive, bool isRightFlipperActive) : position(position), velocity(velocity), isLeftFlipperActive(isLeftFlipperActive), isRightFlipperActive(isRightFlipperActive){
+State::State(b2Vec2 position, b2Vec2 velocity, bool isLeftFlipperActive, bool isRightFlipperActive, float reward) : position(position), velocity(velocity), isLeftFlipperActive(isLeftFlipperActive), isRightFlipperActive(isRightFlipperActive), reward(reward){
 	reduceStatePrecision(2);
 }
 
 float State::getReward(){
-
-	return 0.0f;
+	return reward;
 }
 
 float State::getValue(){
