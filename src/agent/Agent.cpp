@@ -7,19 +7,52 @@
 #include <vector>
 #include <chrono>
 #include <math.h>
+#include <stdio.h>
 
 #include "Agent.h"
-#include "Policy.h"
 #include "State.h"
 #include "../action/Action.h"
 
-Agent::Agent(std::vector<Action> availableActions, Policy policy):
-	availableActions(availableActions), policy(policy), generator(seed()){
+const float Agent::VALUE_ADJUST_FRACTION	= 0.25;
+const float Agent::EPSILON					= 0.15;
 
+Agent::Agent(std::vector<Action*> availableActions):
+	availableActions(availableActions), generator(seed()){
+	lastStateIndex = -1;
 }
 
-void Agent::think(State state){
+void Agent::think(State state, float reward){
+	//first adjust the value for the taken action
 
+	bool 	add = true;
+	int		currentStateIndex = 0;
+
+	for(int i=0;i<states.size();i++){
+
+		//check if it is the "same" state
+		if(states[i].ballPosition == state.ballPosition && states[i].ballVelocity == state.ballVelocity){
+			add = false;
+			currentStateIndex = i;
+		}
+	}
+
+	if(add){
+		states.push_back(state);
+		currentStateIndex = states.size()-1;
+	}
+
+	if(reward != Action::DEFAULT_REWARD && lastStateIndex != -1){ //ignore default values
+		int lastValue = states[currentStateIndex].getValue(lastAction);
+		states[lastStateIndex].setValue(lastAction, lastValue + VALUE_ADJUST_FRACTION * (reward - lastValue));
+	}
+
+	lastStateIndex = currentStateIndex;
+
+	//then decide what action to take next
+	Action* actionToTake = this->epsilonGreedy(state, EPSILON);
+
+	//and the JUST DO IT
+	actionToTake->run();
 }
 
 unsigned Agent::seed(){
@@ -40,48 +73,79 @@ int Agent::randomIntInRange(const int &min, const int &max){
 	return distribution(generator);
 }
 
-State Agent::softmax(std::vector<State> states, unsigned long temperature){
-	std::vector<double> probabilities(states.size());
-	for(int i=0;i<states.size();i++){
-		//probabilities[i] = ();
-	}
-}
+/*Action Agent::softmax(State state, unsigned long temperature){
 
-State Agent::epsilonGreedy(std::vector<State> states, const float &epsilon){
+	std::vector<double> probabilities(states.size());
+	float numerator, denominator;
+
+	for(int i = 0;i<availableActions.size();i++){
+
+	}
+
+	for(int i=0;i<states.size();i++){
+
+		probabilities[i] = 0;
+	}
+}*/
+
+Action* Agent::epsilonGreedy(State state, const float &epsilon){
 	if(epsilon < randomFloatInRange(0.0f, 1.0f)){
 		//pick a greedy state
-		return greedy(states);
+		return greedy(state);
 	}else{
 		//pick a random state
-		return random(states);
+		return random(availableActions);
 	}
 }
 
-State Agent::greedy(std::vector<State> states){
-	float				maxValue = 0;
-	float				tmpValue;
-	std::vector<State>	maxStates;
+Action* Agent::greedy(State state){
+	float					maxValue = 0;
+	float					tmpValue;
+	std::vector<Action*>	maxActions;
 
-	for(int i=1;i<states.size();i++){
-		tmpValue		= states[i].getValue();
+	for(int i=0;i<availableActions.size();i++){
+		tmpValue		= state.getValue(availableActions[i]);
 
 		if(tmpValue > maxValue){
 			maxValue = tmpValue;
 
-			maxStates.clear();
-			maxStates.push_back(states[i]);
+			maxActions.clear();
+			maxActions.push_back(availableActions[i]);
 		}else if(tmpValue == maxValue){
-			maxStates.push_back(states[i]);
+			maxActions.push_back(availableActions[i]);
 		}
 	}
 
-	if(maxStates.size() == 1){
-		return maxStates[0];
+	if(maxActions.size() == 1){
+		return maxActions[0];
 	}else{
-		return random(maxStates);
+		return random(maxActions);
 	}
 }
 
-State Agent::random(const std::vector<State> &states){
-	return states[randomIntInRange(0, states.size()-1)];
+Action* Agent::random(std::vector<Action*> availableActions){
+	return availableActions[randomIntInRange(0, availableActions.size()-1)];
+}
+
+void Agent::savePolicyToFile(){
+	Json::Value policy;
+	for(int i=0;i<states.size();i++){
+		Json::Value state;
+
+		state["position"]["x"] = states[i].ballPosition.x;;
+		state["position"]["y"] = states[i].ballPosition.y;
+
+		state["velocity"]["x"] = states[i].ballVelocity.x;
+		state["velocity"]["y"] = states[i].ballVelocity.y;
+
+		for(auto const &iterator : states[i].values) {
+			//iterator.first->getUID() results in a crash
+			std::cout << iterator.first->getUID() << ": " << iterator.second << std::endl;
+			state["values"][iterator.first->getUID()] = iterator.second;
+		}
+
+		policy["states"][i] = state;
+	}
+
+	std::cout << policy << std::endl;
 }

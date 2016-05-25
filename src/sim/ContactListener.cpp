@@ -13,12 +13,11 @@
 
 #include "ContactListener.h"
 #include "UserData.h"
+#include "../action/Action.h"
 #include "Simulation.h"
 
 const float ContactListener::KICKER_FORCE_Y_MIN		= 0.00075f;
 const float ContactListener::KICKER_FORCE_Y_MAX		= 0.001f;
-
-const float ContactListener::GAME_OVER_REWARD		= -10.0f;
 
 ContactListener::ContactListener(std::function<void(void)> gameOverCallback, std::function<void(float)> rewardCallback):
 	gameOverCallback(gameOverCallback),
@@ -80,8 +79,7 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 			ball->ApplyForceToCenter(b2Vec2(0.0f, randomFloatInRange(KICKER_FORCE_Y_MIN, KICKER_FORCE_Y_MAX)), true);
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_GAMEOVER){
-			//TODO: big negative reward
-			rewardCallback(GAME_OVER_REWARD);
+			rewardCallback(Action::MIN_REWARD);
 			gameOverCallback();
 			return;
 		}

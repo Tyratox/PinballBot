@@ -15,3 +15,5 @@ ActionSimEnableLeftFlipper::ActionSimEnableLeftFlipper(Simulation &sim) : sim(si
 void ActionSimEnableLeftFlipper::run(){
 	sim.enableLeftFlipper();
 }
+
+const char* ActionSimEnableLeftFlipper::getUID(){return "ENABLE_LEFT_FLIPPER";}

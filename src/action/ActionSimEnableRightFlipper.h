@@ -7,7 +7,6 @@
 #ifndef ACTION_ACTIONSIMENABLERIGHTFLIPPER_H_
 #define ACTION_ACTIONSIMENABLERIGHTFLIPPER_H_
 
-
 #include "Action.h"
 #include "../sim/Simulation.h"
 
@@ -20,6 +19,7 @@ class ActionSimEnableRightFlipper : public Action{
 		ActionSimEnableRightFlipper(Simulation &sim);
 
 		void run();
+		const char* getUID();
 };
 
 

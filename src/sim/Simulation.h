@@ -127,6 +127,9 @@ class Simulation{
 	/* And last but not least the public functions */
 	public:
 
+		//stores the current reward
+		float											reward;
+
 		/**
 		 * Inits the world and all of the needed objects
 		 */

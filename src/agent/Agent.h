@@ -8,20 +8,26 @@
 #define AGENT_AGENT_H_
 
 #include <vector>
+#include <iostream>
 
-#include "Policy.h"
+#include <json/json.h>
+#include <json/writer.h>
+
 #include "State.h"
 #include "../action/Action.h"
 
 class Agent{
 
+	public:
+		static const float					VALUE_ADJUST_FRACTION;
+		static const float					EPSILON;
+
 	private:
 
-		std::vector<Action>					availableActions;
-
-		Policy								policy;
-
+		std::vector<Action*>				availableActions;
 		std::default_random_engine			generator;
+
+		std::vector<State>					states;
 
 		/**
 		 * Generates a seed.
@@ -47,49 +53,58 @@ class Agent{
 
 		/**
 		 * Returns one state inside of a vector based on a softmax algorithm
-		 * @param	states			std::vector<State>		A vector containing all the possible states
+		 * @param	state			State					A state containing all the possible actions
 		 * @param	temperature		unsigned long			High "temperature" => all actions equally probable, low "temperature" => big difference, 0 = greedy
-		 * @return					State					The picked state
+		 * @return					Action					The picked action
 		 */
-		State softmax(std::vector<State> states, unsigned long temperature);
+		//Action softmax(State state, unsigned long temperature);
 
 		/**
 		 * Returns one state inside of a vector based on a epsilon greedy algorithm
-		 * @param	states		std::vector<State>		A vector containing all the possible states
+		 * @param	state		State					A state containing all the possible actions
 		 * @param	epsilon		float					Range: [0-1]: The percentage of time which this function should pick a random state
-		 * @return				State					The picked state
+		 * @return				Action					The picked action
 		 */
-		State epsilonGreedy(std::vector<State> states, const float &epsilon);
+		Action* epsilonGreedy(State state, const float &epsilon);
 
 		/**
 		 * Picks the state with the highest value
-		 * @param	states		std::vector<State>		A vector containing all the possible states
-		 * @return				State					The picked state
+		 * @param	state		State					A state containing all the possible actions
+		 * @return				Action					The picked action
 		 */
-		State greedy(std::vector<State> states);
+		Action* greedy(State state);
 
 		/**
 		 * Picks a random state
-		 * @param	states		std::vector<State>		A vector containing all the possible states
-		 * @return				State					The picked state
+		 * @param	states		std::vector<Action*>	A vector containing all the possible actions
+		 * @return				Action					The picked action
 		 */
-		State random(const std::vector<State> &states);
+		Action* random(std::vector<Action*> availableActions);
 
 	public:
 
+		int		lastStateIndex;
+		Action*	lastAction;
+
 		/**
 		 * Init the Agent class
-		 * @param	availableActions	std::vector<Action>		The actions available to the agent
-		 * @param	policy				Policy					A previously saved policy (optional)
+		 * @param	availableActions	std::vector<Action*>	The actions available to the agent
 		 */
-		Agent(std::vector<Action> availableActions, Policy policy = Policy());
+		Agent(std::vector<Action*> availableActions);
 
 		/**
 		 * Based on a given state he agent needs to decide what to do
 		 * @param	state		State		The given state
+		 * @param	reward		float		The returned reward
 		 * @return				void
 		 */
-		void think(State s);
+		void think(State s, float reward = 0);
+
+		/**
+		 * Saves the policy to a file
+		 */
+
+		void savePolicyToFile();
 
 };
 

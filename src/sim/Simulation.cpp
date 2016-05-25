@@ -376,7 +376,7 @@ void Simulation::generatePinField(){
 			//if it's the last one and is still valid add it
 			pinDef.position.Set(v.x, v.y);
 			this->pinBodies[pins_generated] = world.CreateBody(&pinDef);
-			this->pinData[pins_generated]	= UserData(UserData::PINBALL_PIN, 1, true, 0, 0, 0);
+			this->pinData[pins_generated]	= UserData(UserData::PINBALL_PIN, 1.0f, true, 0, 0, 0);
 			this->pinBodies[pins_generated]->SetUserData(&this->pinData[pins_generated]);
 			this->pinBodies[pins_generated]->CreateFixture(&pinFixtureDef);
 			pins_generated++;
@@ -390,15 +390,19 @@ void Simulation::gameOver(){
 }
 
 void Simulation::getReward(float reward){
-	std::printf("GOT A REWARD OF %f\n", reward);
+	this->reward = reward;
 }
 
 void Simulation::step(const float32 &time_step){
+
+	reward = Action::DEFAULT_REWARD; //reset current reward
+
+	world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);//reward value is set in this call by the collision listener
+
 	if(isGameOver){
 		respawnBall();
 		isGameOver = false;
 	}
-	world.Step(time_step, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
 }
 
 void Simulation::enableLeftFlipper(){
@@ -425,5 +429,5 @@ void Simulation::debugPlayingBall(){
 }
 
 State Simulation::getCurrentState(){
-	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity(), flipperLeftRevJoint->IsMotorEnabled(), flipperRightRevJoint->IsMotorEnabled());
+	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity());
 }

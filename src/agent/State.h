@@ -11,19 +11,19 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <map>
+
 #include <Box2D/Box2D.h>
+
+#include "../action/Action.h"
 
 class State{
 
+	public:
+
+		static const int	FLOAT_PRECISION;
+
 	private:
-
-		b2Vec2 position;
-		b2Vec2 velocity;
-
-		bool isLeftFlipperActive;
-		bool isRightFlipperActive;
-
-		float reward;
 
 		/**
 		 * Reduces the precision of a floating point number in order to reduce the data load
@@ -51,29 +51,35 @@ class State{
 
 	public:
 
+		std::map<Action*, float> 		values;
+
+		b2Vec2							ballPosition;
+		b2Vec2							ballVelocity;
+
 		/**
 		 * Inits a state
-		 * @param	ball					Ball		Data about the ball (position, velocity)
-		 * @param	isLeftFlipperActive		bool		If the left		flipper currently is active
-		 * @param	isRightFlipperActive	bool		If the right	flipper currently is active
+		 * @param	ballPosition		b2Vec2					The ball position
+		 * @param	ballVelocity		b2Vec2					The ball velocity
+		 * @param	availableActions	std::vector<Action*>	The actions available, needed for the setting the default values of the 'values' map
 		 */
-		State(b2Vec2 position = b2Vec2(0, 0), b2Vec2 velocity = b2Vec2(0, 0), bool isLeftFlipperActive = false, bool isRightFlipperActive = false, float reward = 0);
+		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0), const std::vector<Action*> &availableActions = std::vector<Action*>());
 
 		/**
-		 * Gets the expected reward based on a lookup table and the model of the environment
-		 * @param	s	State	The State of which the reward is calculated
-		 * @return		double	The expected reward
+		 * Gets the expected reward if a specific action is taken
+		 * @param	action	*Action	The action of which the expected reward is returned
+		 * @return			float	The expected reward
 		 */
 
-		float getReward();
+		float getValue(Action *action);
 
 		/**
-		 * Calculates the expected value the given state will in the next turn and in the future => convergence
-		 * @param	s	State	The State of which the value is calculated
-		 * @return		double	The expected value
+		 * Sets the expected reward if a specific action is taken
+		 * @param	action	*Action	The action of which the expected reward is set
+		 * @param	value	float	The expected reward
+		 * @return			void
 		 */
 
-		float getValue();
+		void setValue(Action *action, float value);
 
 };
 

@@ -18,14 +18,14 @@
 class ActionsSim{
 	private:
 	public:
-		static std::vector<Action> actionsAvailable(Simulation &sim){
+		static std::vector<Action*> actionsAvailable(Simulation &sim){
 
-			std::vector<Action> vec(4);
+			std::vector<Action*> vec(4);
 
-			vec[0] = ActionSimEnableLeftFlipper(sim);
-			vec[1] = ActionSimDisableLeftFlipper(sim);
-			vec[2] = ActionSimEnableRightFlipper(sim);
-			vec[3] = ActionSimDisableRightFlipper(sim);
+			vec[0] = new ActionSimEnableLeftFlipper(sim);
+			vec[1] = new ActionSimDisableLeftFlipper(sim);
+			vec[2] = new ActionSimEnableRightFlipper(sim);
+			vec[3] = new ActionSimDisableRightFlipper(sim);
 
 			return vec;
 		}

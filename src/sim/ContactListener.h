@@ -18,8 +18,6 @@ class ContactListener: public b2ContactListener{
 		static const float					KICKER_FORCE_Y_MIN;
 		static const float					KICKER_FORCE_Y_MAX;
 
-		static const float					GAME_OVER_REWARD;
-
 		std::function<void(void)>			gameOverCallback;
 		std::function<void(float)>			rewardCallback;
 

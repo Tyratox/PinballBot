@@ -15,3 +15,5 @@ ActionSimDisableRightFlipper::ActionSimDisableRightFlipper(Simulation &sim) : si
 void ActionSimDisableRightFlipper::run(){
 	sim.disableRightFlipper();
 }
+
+const char* ActionSimDisableRightFlipper::getUID(){return "DISABLE_RIGHT_FLIPPER";}

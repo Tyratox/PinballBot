@@ -5,6 +5,7 @@
 // Description : A reinforcement learning agent that learns to play pinball
 //============================================================================
 
+#include <stdlib.h>     /* atexit */
 #include <iostream>
 
 #include <SDL2/SDL.h>
@@ -15,12 +16,15 @@
 #include "sim/Simulation.h"
 #include "sim/Renderer.h"
 
-const bool					SIMULATION			= true;
+#include "agent/Agent.h"
+#include "agent/State.h"
 
-const bool					RENDER				= true;
-const float					FPS					= 60.0f;
-const float					TIME_STEP			= 1.0f / FPS;
-const float					TICK_INTERVAL		= 1000.0f / FPS;
+static const bool			SIMULATION			= true;
+
+static const bool			RENDER				= true;
+static const float			FPS					= 60.0f;
+static const float			TIME_STEP			= 1.0f / FPS;
+static const float			TICK_INTERVAL		= 1000.0f / FPS;
 
 const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
 
@@ -28,6 +32,8 @@ bool						pause				= false;
 bool						quit				= false;
 
 static Uint32				next_time			= 0;
+
+Agent*						rlAgent;
 
 Uint32 timeLeft(void) {
     Uint32 now = SDL_GetTicks();
@@ -50,7 +56,12 @@ void runSimulation(){
 	Renderer				r(320, 640, sim.getWorld());
 	SDL_Event				e;
 
-	std::vector<Action> actions = ActionsSim::actionsAvailable(sim);
+	std::vector<Action*>	availableActions = ActionsSim::actionsAvailable(sim);
+
+	Agent					agent(availableActions);
+	rlAgent					= &agent;
+
+	//int step = 0;
 
 	while(!quit){
 
@@ -83,26 +94,39 @@ void runSimulation(){
 					sim.generatePinField();
 				}
 
+				if (KEYS[SDL_SCANCODE_S]){
+					rlAgent->savePolicyToFile();
+				}
+
 			}
 		}
 
 		if(!pause){
 
 			sim.step(TIME_STEP);
+			rlAgent->think(sim.getCurrentState(), sim.reward);
 
 				if(RENDER){
 					r.render();
-					//sim.debugPlayingBall();
-					//sim.getCurrentState();
 					capFramerate();
 				}
 		}else{
 			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}
+
+		/*if(step % 1000000 == 0){
+			std::cout << "STEP: " << step << std::endl;
+		}
+		step++;*/
 	}
 }
 
+void shutdownHook(){//doesn't work yet, vector empty :/
+	rlAgent->savePolicyToFile();
+}
+
 int main(int argc, char** argv) {
+	atexit(shutdownHook);
 
 	if(SIMULATION){
 		runSimulation();

@@ -10,8 +10,10 @@
 #include <vector>
 #include <cmath>
 #include <random>
+
 #include <Box2D/Box2D.h>
 
+const int State::FLOAT_PRECISION	= 3;
 
 float State::roundFloat(const int &precision, const float &number){
 	return round(number * (10 * precision)) / (10 * precision);
@@ -22,19 +24,18 @@ b2Vec2 State::reduceVectorPrecision(const int &precision, const b2Vec2 &vec){
 }
 
 void State::reduceStatePrecision(const int &precision){
-	position = reduceVectorPrecision(precision, position);
-	velocity = reduceVectorPrecision(precision, velocity);
+	ballPosition = reduceVectorPrecision(precision, ballPosition);
+	ballVelocity = reduceVectorPrecision(precision, ballVelocity);
 }
 
-State::State(b2Vec2 position, b2Vec2 velocity, bool isLeftFlipperActive, bool isRightFlipperActive, float reward) : position(position), velocity(velocity), isLeftFlipperActive(isLeftFlipperActive), isRightFlipperActive(isRightFlipperActive), reward(reward){
-	reduceStatePrecision(2);
+State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, const std::vector<Action*> &availableActions) : ballPosition(ballPosition){
+	reduceStatePrecision(FLOAT_PRECISION);
 }
 
-float State::getReward(){
-	return reward;
+float State::getValue(Action *action){
+	return values[action];
 }
 
-float State::getValue(){
-
-	return 0.0f;
+void State::setValue(Action *action, float value){
+	values[action] = value;
 }

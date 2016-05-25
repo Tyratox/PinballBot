@@ -9,6 +9,13 @@
 
 
 class Action{
+
+	public:
+
+		static const float	DEFAULT_REWARD;
+		static const float	MIN_REWARD;
+		static const float	MAX_REWARD;
+
 	private:
 
 	public:
@@ -18,6 +25,18 @@ class Action{
 		virtual ~Action();
 
 		virtual void run();
+
+		virtual const char* getUID();
+
+		bool operator< (const Action &action) const{
+			return this < &action;
+		}
+		bool operator> (const Action &action) const{
+			return this > &action;
+		}
+		bool operator== (const Action &action) const{
+			return this == &action;
+		}
 };
 
 

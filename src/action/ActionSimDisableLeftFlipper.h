@@ -7,6 +7,7 @@
 #ifndef ACTION_ACTIONSIMDISABLELEFTFLIPPER_H_
 #define ACTION_ACTIONSIMDISABLELEFTFLIPPER_H_
 
+
 #include "Action.h"
 #include "../sim/Simulation.h"
 
@@ -19,6 +20,7 @@ class ActionSimDisableLeftFlipper : public Action{
 		ActionSimDisableLeftFlipper(Simulation &sim);
 
 		void run();
+		const char* getUID();
 };
 
 
