@@ -8,6 +8,7 @@
 #include <chrono>
 #include <math.h>
 #include <stdio.h>
+#include <fstream>
 
 #include "Agent.h"
 #include "State.h"
@@ -128,23 +129,34 @@ Action* Agent::random(std::vector<Action*> availableActions){
 	return availableActions[randomIntInRange(0, availableActions.size()-1)];
 }
 
-void Agent::savePolicyToFile(){
-	Json::Value policy;
-	for(int i=0;i<states.size();i++){
-		Json::Value state;
+void Agent::savePoliciesToFile(){
 
-		state["position"]["x"] = std::to_string(states[i].ballPosition.x).substr(0,5);
-		state["position"]["y"] = std::to_string(states[i].ballPosition.y).substr(0,5);
+	if(states.size() != 0){
 
-		state["velocity"]["x"] = std::to_string(states[i].ballVelocity.x).substr(0,5);
-		state["velocity"]["y"] = std::to_string(states[i].ballVelocity.y).substr(0,5);
+		Json::Value policies;
 
-		for(auto const &iterator : states[i].values) {
-			state["values"][iterator.first->getUID()] = std::to_string(iterator.second).substr(0,5);
+		for(int i=0;i<states.size();i++){
+			Json::Value state;
+
+			state["position"]["x"] = std::to_string(states[i].ballPosition.x).substr(0,5);
+			state["position"]["y"] = std::to_string(states[i].ballPosition.y).substr(0,5);
+
+			state["velocity"]["x"] = std::to_string(states[i].ballVelocity.x).substr(0,5);
+			state["velocity"]["y"] = std::to_string(states[i].ballVelocity.y).substr(0,5);
+
+			for(auto const &iterator : states[i].values) {
+				state["values"][iterator.first->getUID()] = std::to_string(iterator.second).substr(0,5);
+			}
+
+			policies["states"][i] = state;
 		}
 
-		policy["states"][i] = state;
-	}
+		std::ofstream file_id;
+		file_id.open("policies.json");
 
-	std::cout << policy << std::endl;
+		Json::StyledWriter styledWriter;
+		file_id << styledWriter.write(policies);
+
+		file_id.close();
+	}
 }

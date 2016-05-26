@@ -104,7 +104,7 @@ class Agent{
 		 * Saves the policy to a file
 		 */
 
-		void savePolicyToFile();
+		void savePoliciesToFile();
 
 };
 

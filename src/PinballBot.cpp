@@ -95,7 +95,7 @@ void runSimulation(){
 				}
 
 				if (KEYS[SDL_SCANCODE_S]){
-					rlAgent->savePolicyToFile();
+					rlAgent->savePoliciesToFile();
 				}
 
 			}
@@ -122,7 +122,7 @@ void runSimulation(){
 }
 
 void shutdownHook(){//doesn't work yet, vector empty :/
-	rlAgent->savePolicyToFile();
+	rlAgent->savePoliciesToFile();
 }
 
 int main(int argc, char** argv) {
