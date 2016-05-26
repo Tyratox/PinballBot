@@ -28,7 +28,7 @@ void State::reduceStatePrecision(const int &precision){
 	ballVelocity = reduceVectorPrecision(precision, ballVelocity);
 }
 
-State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, const std::vector<Action*> &availableActions) : ballPosition(ballPosition){
+State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, const std::vector<Action*> &availableActions) : ballPosition(ballPosition), ballVelocity(ballVelocity){
 	reduceStatePrecision(FLOAT_PRECISION);
 }
 

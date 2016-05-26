@@ -46,13 +46,14 @@ void Agent::think(State state, float reward){
 		states[lastStateIndex].setValue(lastAction, lastValue + VALUE_ADJUST_FRACTION * (reward - lastValue));
 	}
 
-	lastStateIndex = currentStateIndex;
-
 	//then decide what action to take next
 	Action* actionToTake = this->epsilonGreedy(state, EPSILON);
 
 	//and the JUST DO IT
 	actionToTake->run();
+
+	lastStateIndex	= currentStateIndex;
+	lastAction		= actionToTake;
 }
 
 unsigned Agent::seed(){
@@ -132,16 +133,14 @@ void Agent::savePolicyToFile(){
 	for(int i=0;i<states.size();i++){
 		Json::Value state;
 
-		state["position"]["x"] = states[i].ballPosition.x;;
-		state["position"]["y"] = states[i].ballPosition.y;
+		state["position"]["x"] = std::to_string(states[i].ballPosition.x).substr(0,5);
+		state["position"]["y"] = std::to_string(states[i].ballPosition.y).substr(0,5);
 
-		state["velocity"]["x"] = states[i].ballVelocity.x;
-		state["velocity"]["y"] = states[i].ballVelocity.y;
+		state["velocity"]["x"] = std::to_string(states[i].ballVelocity.x).substr(0,5);
+		state["velocity"]["y"] = std::to_string(states[i].ballVelocity.y).substr(0,5);
 
 		for(auto const &iterator : states[i].values) {
-			//iterator.first->getUID() results in a crash
-			std::cout << iterator.first->getUID() << ": " << iterator.second << std::endl;
-			state["values"][iterator.first->getUID()] = iterator.second;
+			state["values"][iterator.first->getUID()] = std::to_string(iterator.second).substr(0,5);
 		}
 
 		policy["states"][i] = state;

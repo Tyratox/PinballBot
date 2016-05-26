@@ -27,16 +27,6 @@ class Action{
 		virtual void run();
 
 		virtual const char* getUID();
-
-		bool operator< (const Action &action) const{
-			return this < &action;
-		}
-		bool operator> (const Action &action) const{
-			return this > &action;
-		}
-		bool operator== (const Action &action) const{
-			return this == &action;
-		}
 };
 
 
