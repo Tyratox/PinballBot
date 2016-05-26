@@ -27,8 +27,6 @@ class Agent{
 		std::vector<Action*>				availableActions;
 		std::default_random_engine			generator;
 
-		std::vector<State>					states;
-
 		/**
 		 * Generates a seed.
 		 * @return	void
@@ -83,8 +81,10 @@ class Agent{
 
 	public:
 
-		int		lastStateIndex;
-		Action*	lastAction;
+		std::vector<State>					states;
+
+		int									lastStateIndex;
+		Action*								lastAction;
 
 		/**
 		 * Init the Agent class
@@ -105,6 +105,12 @@ class Agent{
 		 */
 
 		void savePoliciesToFile();
+
+		/**
+		 * Loads a policy file
+		 */
+
+		void loadPolicyFromFile();
 
 };
 

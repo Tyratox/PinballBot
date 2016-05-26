@@ -19,21 +19,25 @@
 #include "agent/Agent.h"
 #include "agent/State.h"
 
-static const bool			SIMULATION			= true;
+static const bool					SIMULATION			= true;
 
-static const bool			RENDER				= true;
-static const float			FPS					= 60.0f;
-static const float			TIME_STEP			= 1.0f / FPS;
-static const float			TICK_INTERVAL		= 1000.0f / FPS;
+static const bool					RENDER				= false;
+static const float					FPS					= 60.0f;
+static const float					TIME_STEP			= 1.0f / FPS;
+static const float					TICK_INTERVAL		= 1000.0f / FPS;
 
-const Uint8*				KEYS				= SDL_GetKeyboardState(NULL);
+static const unsigned long long		SAVE_INTERVAL		= 100000;
+static const unsigned long long		DEBUG_INTERVAL		= 10000;
 
-bool						pause				= false;
-bool						quit				= false;
+const Uint8*						KEYS				= SDL_GetKeyboardState(NULL);
 
-static Uint32				next_time			= 0;
+bool								pause				= false;
+bool								quit				= false;
 
-Agent*						rlAgent;
+static Uint32						next_time			= 0;
+
+Agent*								rlAgent;
+Renderer*							renderer;
 
 Uint32 timeLeft(void) {
     Uint32 now = SDL_GetTicks();
@@ -53,7 +57,12 @@ void capFramerate(void) {
 void runSimulation(){
 
 	Simulation 				sim;
-	Renderer				r(320, 640, sim.getWorld());
+
+	if(RENDER){
+		Renderer				r(320, 640, sim.getWorld());
+		renderer				= &r;
+	}
+
 	SDL_Event				e;
 
 	std::vector<Action*>	availableActions = ActionsSim::actionsAvailable(sim);
@@ -61,7 +70,7 @@ void runSimulation(){
 	Agent					agent(availableActions);
 	rlAgent					= &agent;
 
-	//int step = 0;
+	unsigned long long step = 0;
 
 	while(!quit){
 
@@ -107,17 +116,23 @@ void runSimulation(){
 			rlAgent->think(sim.getCurrentState(), sim.reward);
 
 				if(RENDER){
-					r.render();
+					renderer->render();
 					capFramerate();
 				}
 		}else{
 			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}
 
-		/*if(step % 1000000 == 0){
-			std::cout << "STEP: " << step << std::endl;
+		if(/*step != 0*/true){
+			if(step % DEBUG_INTERVAL == 0){
+				printf("STEP #%lld, State size: %ld\n", step, rlAgent->states.size());
+
+				if(step % SAVE_INTERVAL == 0){
+					rlAgent->savePoliciesToFile();
+				}
+			}
 		}
-		step++;*/
+		step++;
 	}
 }
 

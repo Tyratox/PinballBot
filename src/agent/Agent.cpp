@@ -20,6 +20,8 @@ const float Agent::EPSILON					= 0.15;
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
 	lastStateIndex = -1;
+
+	loadPolicyFromFile();
 }
 
 void Agent::think(State state, float reward){
@@ -138,16 +140,15 @@ void Agent::savePoliciesToFile(){
 		for(int i=0;i<states.size();i++){
 			Json::Value state;
 
-			state["position"]["x"] = std::to_string(states[i].ballPosition.x).substr(0,5);
-			state["position"]["y"] = std::to_string(states[i].ballPosition.y).substr(0,5);
+			state["position"]["x"] = states[i].ballPosition.x;
+			state["position"]["y"] = states[i].ballPosition.y;
 
-			state["velocity"]["x"] = std::to_string(states[i].ballVelocity.x).substr(0,5);
-			state["velocity"]["y"] = std::to_string(states[i].ballVelocity.y).substr(0,5);
+			state["velocity"]["x"] = states[i].ballVelocity.x;
+			state["velocity"]["y"] = states[i].ballVelocity.y;
 
 			for(auto const &iterator : states[i].values) {
-				state["values"][iterator.first->getUID()] = std::to_string(iterator.second).substr(0,5);
+				state["values"][iterator.first->getUID()] = iterator.second;
 			}
-
 			policies["states"][i] = state;
 		}
 
@@ -159,4 +160,37 @@ void Agent::savePoliciesToFile(){
 
 		file_id.close();
 	}
+}
+
+void Agent::loadPolicyFromFile(){
+	Json::Value root; //will be populated after parsing
+	Json::Reader reader;
+	std::ifstream policies("policies.json", std::ifstream::binary);
+
+	if (reader.parse(policies, root, false)){
+
+		states = std::vector<State>(root["states"].size());
+
+		for(int i=0;i<root["states"].size();i++){
+			State state;
+
+			state.ballPosition = b2Vec2(std::stof(root["states"][i]["position"]["x"].asString()), std::stof(root["states"][i]["position"]["y"].asString()));
+			state.ballVelocity = b2Vec2(std::stof(root["states"][i]["velocity"]["x"].asString()), std::stof(root["states"][i]["velocity"]["y"].asString()));
+
+			for(Json::ValueIterator itr = root["states"][i]["values"].begin() ; itr != root["states"][i]["values"].end() ; itr++){
+				for(int j=0;j<availableActions.size();j++){
+					if(strcmp(itr.key().asCString(), availableActions[j]->getUID()) == 0){
+						state.values[availableActions[i]] = std::stof(root["states"][i]["values"][itr.key().asString()].asString());
+					}
+				}
+			}
+
+			states[i] = state;
+		}
+
+	}else{
+		std::cout  << reader.getFormattedErrorMessages() << std::endl;
+	}
+
+
 }
