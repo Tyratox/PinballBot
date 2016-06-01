@@ -10,9 +10,6 @@
 #include <vector>
 #include <iostream>
 
-#include <json/json.h>
-#include <json/writer.h>
-
 #include "State.h"
 #include "../action/Action.h"
 

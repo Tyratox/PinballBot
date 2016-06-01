@@ -123,7 +123,7 @@ void runSimulation(){
 			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}
 
-		if(/*step != 0*/true){
+		if(step != 0){
 			if(step % DEBUG_INTERVAL == 0){
 				printf("STEP #%lld, State size: %ld\n", step, rlAgent->states.size());
 

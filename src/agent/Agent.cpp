@@ -44,13 +44,36 @@ void Agent::think(State state, float reward){
 		currentStateIndex = states.size()-1;
 	}
 
-	if(reward != Action::DEFAULT_REWARD && lastStateIndex != -1){ //ignore default values
-		int lastValue = states[currentStateIndex].getValue(lastAction);
-		states[lastStateIndex].setValue(lastAction, lastValue + VALUE_ADJUST_FRACTION * (reward - lastValue));
+	if(lastStateIndex != -1){
+
+		float lastValue;
+
+		if(states[lastStateIndex].values.find(lastAction) == states[lastStateIndex].values.end()){
+			states[lastStateIndex].setValue(lastAction, Action::DEFAULT_REWARD);
+		}
+
+		lastValue = states[lastStateIndex].getValue(lastAction);
+
+		if(reward != Action::DEFAULT_REWARD){//ignore default values
+			states[lastStateIndex].setValue(lastAction, lastValue + VALUE_ADJUST_FRACTION * (reward - lastValue));
+			//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
+		}
+
+		if(currentStateIndex != -1 && states[currentStateIndex].values.find(lastAction) != states[currentStateIndex].values.end()){
+
+			float currentValue = states[currentStateIndex].getValue(lastAction);
+			states[lastStateIndex].setValue(lastAction, states[lastStateIndex].getValue(lastAction) + VALUE_ADJUST_FRACTION * (currentValue - states[lastStateIndex].getValue(lastAction)));
+
+		}
+
+		if(states[lastStateIndex].getValue(lastAction) != Action::DEFAULT_REWARD){
+			//printf("SET NEW VALUE FOR ACTION: %s for STATE %d, new value: %f\n", lastAction->getUID(), lastStateIndex, states[lastStateIndex].getValue(lastAction));
+		}
+
 	}
 
 	//then decide what action to take next
-	Action* actionToTake = this->epsilonGreedy(state, EPSILON);
+	Action* actionToTake = this->epsilonGreedy(states[currentStateIndex], EPSILON);
 
 	//and the JUST DO IT
 	actionToTake->run();
@@ -135,62 +158,38 @@ void Agent::savePoliciesToFile(){
 
 	if(states.size() != 0){
 
-		Json::Value policies;
+		std::ofstream policies;
+		policies.open("policies.csv");
+
+		//Generate header
+		policies << "POSITION_X;POSITION_Y;VELOCITY_X;VELOCITY_Y";
+		for(int i=0;i<availableActions.size();i++){
+			policies << ";ACTION_" << availableActions[i]->getUID();
+		}
+		policies << std::endl;
+
+		//and the content in the same order
 
 		for(int i=0;i<states.size();i++){
-			Json::Value state;
+			policies << states[i].ballPosition.x << ";" << states[i].ballPosition.y << ";"
+								<< states[i].ballVelocity.x << ";" << states[i].ballVelocity.y;
 
-			state["position"]["x"] = states[i].ballPosition.x;
-			state["position"]["y"] = states[i].ballPosition.y;
+			for(int j=0;j<availableActions.size();j++){
 
-			state["velocity"]["x"] = states[i].ballVelocity.x;
-			state["velocity"]["y"] = states[i].ballVelocity.y;
-
-			for(auto const &iterator : states[i].values) {
-				state["values"][iterator.first->getUID()] = iterator.second;
+				if(states[i].values.find(availableActions[j]) == states[i].values.end()){
+					policies << ";" << Action::DEFAULT_REWARD;
+					//printf("DEFAULT Value: %f\n", Action::DEFAULT_REWARD);
+				}else{
+					policies << ";" << (states[i].getValue(availableActions[j]));
+					//printf("Value: %f\n", (states[i].getValue(availableActions[j])));
+				}
 			}
-			policies["states"][i] = state;
+
+			policies << std::endl;
 		}
-
-		std::ofstream file_id;
-		file_id.open("policies.json");
-
-		Json::StyledWriter styledWriter;
-		file_id << styledWriter.write(policies);
-
-		file_id.close();
 	}
 }
 
 void Agent::loadPolicyFromFile(){
-	Json::Value root; //will be populated after parsing
-	Json::Reader reader;
-	std::ifstream policies("policies.json", std::ifstream::binary);
-
-	if (reader.parse(policies, root, false)){
-
-		states = std::vector<State>(root["states"].size());
-
-		for(int i=0;i<root["states"].size();i++){
-			State state;
-
-			state.ballPosition = b2Vec2(std::stof(root["states"][i]["position"]["x"].asString()), std::stof(root["states"][i]["position"]["y"].asString()));
-			state.ballVelocity = b2Vec2(std::stof(root["states"][i]["velocity"]["x"].asString()), std::stof(root["states"][i]["velocity"]["y"].asString()));
-
-			for(Json::ValueIterator itr = root["states"][i]["values"].begin() ; itr != root["states"][i]["values"].end() ; itr++){
-				for(int j=0;j<availableActions.size();j++){
-					if(strcmp(itr.key().asCString(), availableActions[j]->getUID()) == 0){
-						state.values[availableActions[i]] = std::stof(root["states"][i]["values"][itr.key().asString()].asString());
-					}
-				}
-			}
-
-			states[i] = state;
-		}
-
-	}else{
-		std::cout  << reader.getFormattedErrorMessages() << std::endl;
-	}
-
 
 }
