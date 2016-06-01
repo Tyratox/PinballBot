@@ -222,7 +222,7 @@ void Agent::loadPolicyFromFile(){
 		state.ballVelocity	= ballVelocity;
 
 		for (int i = 0; i < availableActions.size(); i++) {
-			state.values[availableActions[i]] = stof(partials[3 + i]);
+			state.values[availableActions[i]] = stof(partials[4 + i]);
 		}
 
 		// push new state to states
