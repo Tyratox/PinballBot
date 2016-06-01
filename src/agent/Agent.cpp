@@ -9,6 +9,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <fstream>
+#include <string>
+#include <sstream>
 
 #include "Agent.h"
 #include "State.h"
@@ -191,5 +193,57 @@ void Agent::savePoliciesToFile(){
 }
 
 void Agent::loadPolicyFromFile(){
+	std::string					line;
+	std::ifstream				policies;
+	std::vector<std::string>	partials;
 
+	states.clear();
+
+	policies.open("policies.csv");
+	//printf("start\n");
+	while (std::getline(policies, line)) {
+		std::getline(policies, line);
+
+		split(line, ';', partials);
+
+		//initialize State object
+		State state;
+
+		b2Vec2 ballPosition;
+		ballPosition.x	= stof(partials[0]);
+		ballPosition.y	= stof(partials[1]);
+
+		b2Vec2 ballVelocity;
+		ballVelocity.x	= stof(partials[2]);
+		ballVelocity.y = stof(partials[3]);
+
+
+		state.ballPosition	= ballPosition;
+		state.ballVelocity	= ballVelocity;
+
+		for (int i = 0; i < availableActions.size(); i++) {
+			state.values[availableActions[i]] = stof(partials[3 + i]);
+		}
+
+		// push new state to states
+		states.push_back(state);
+		
+		//printf("read line: %s\n", line.c_str());
+		//printf("read line: %s\n", partials[0].c_str());
+		//printf("read line: %s\n", partials[1].c_str());
+		//printf("read line: %s\n", partials[2].c_str());
+
+		partials.clear();
+	}
+
+	return;
+}
+
+std::vector<std::string> Agent::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim)) {
+		elems.push_back(item);
+	}
+	return elems;
 }

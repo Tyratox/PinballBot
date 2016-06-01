@@ -90,7 +90,7 @@ class Agent{
 		Agent(std::vector<Action*> availableActions);
 
 		/**
-		 * Based on a given state he agent needs to decide what to do
+		 * Based on a given state the agent needs to decide what to do
 		 * @param	state		State		The given state
 		 * @param	reward		float		The returned reward
 		 * @return				void
@@ -108,6 +108,15 @@ class Agent{
 		 */
 
 		void loadPolicyFromFile();
+
+		std::vector<std::string> split(const std::string &s, char delim, std::vector<std::string> &elems);
+		/**
+		* Breaks a String into partials beteen the delimiter
+		* @param	s		String			String to break down
+		* @param	delim	char			Deimiter between partials
+		* @param	elems	vector<string>	vector where strings are saved into
+		* @return			vector<string>
+		*/
 
 };
 
