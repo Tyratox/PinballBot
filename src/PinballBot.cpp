@@ -21,7 +21,7 @@
 
 static const bool					SIMULATION			= true;
 
-static const bool					RENDER				= false;
+static const bool					RENDER				= true;
 static const float					FPS					= 60.0f;
 static const float					TIME_STEP			= 1.0f / FPS;
 static const float					TICK_INTERVAL		= 1000.0f / FPS;
@@ -59,8 +59,7 @@ void runSimulation(){
 	Simulation 				sim;
 
 	if(RENDER){
-		Renderer				r(320, 640, sim.getWorld());
-		renderer				= &r;
+		renderer			= new Renderer(320, 640, sim.getWorld());
 	}
 
 	SDL_Event				e;
@@ -100,7 +99,7 @@ void runSimulation(){
 				}
 
 				if (KEYS[SDL_SCANCODE_P]){
-					sim.generatePinField();
+					sim.generateRandomPinField();
 				}
 
 				if (KEYS[SDL_SCANCODE_S]){

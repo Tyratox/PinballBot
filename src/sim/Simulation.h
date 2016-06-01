@@ -124,6 +124,8 @@ class Simulation{
 		UserData										gameOverData;
 		UserData										flipperData;
 
+		std::vector<b2Vec2>						staticPlayingField;
+
 	/* And last but not least the public functions */
 	public:
 
@@ -157,7 +159,12 @@ class Simulation{
 		 * (Re-)Generates the pin field
 		 * @return void
 		 */
-		void generatePinField();
+		void generateRandomPinField();
+
+		/**
+		 *
+		 */
+		void generateStaticPinField();
 
 		/**
 		 * Function executed by the contact listener on game over

@@ -87,7 +87,13 @@ Simulation::Simulation():
 	ballData(UserData::PINBALL_BALL),
 	kickerData(UserData::PINBALL_KICKER, 0, true, 128, 128, 128, 255),
 	gameOverData(UserData::PINBALL_GAMEOVER, -100, true, 231, 76, 60, 100),
-	flipperData(UserData::PINBALL_FLIPPER){
+	flipperData(UserData::PINBALL_FLIPPER),
+	staticPlayingField{
+		b2Vec2(1 * FIELD_WIDTH / 6, 2 * FIELD_HEIGHT / 8),
+		b2Vec2(3 * FIELD_WIDTH / 6, 2 * FIELD_HEIGHT / 8),
+		b2Vec2(2 * FIELD_WIDTH / 6, 3 * FIELD_HEIGHT / 8),
+		b2Vec2(4 * FIELD_WIDTH / 6, 3 * FIELD_HEIGHT / 8)
+	}{
 
 	/* Initializes a world with gravity pulling downwards and add contact listener */
 	world.SetContactListener(&contactListener);
@@ -264,7 +270,7 @@ Simulation::Simulation():
 	flipperLeftRevJoint							= (b2RevoluteJoint*)this->world.CreateJoint(&flipperLeftRevJointDef);
 	flipperRightRevJoint						= (b2RevoluteJoint*)this->world.CreateJoint(&flipperRightRevJointDef);
 
-	generatePinField();
+	generateStaticPinField();
 	respawnBall();
 }
 
@@ -330,7 +336,7 @@ void Simulation::respawnBall(){
 	this->ballBody->CreateFixture(&ballFixtureDef);
 }
 
-void Simulation::generatePinField(){
+void Simulation::generateRandomPinField(){
 	std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_real_distribution<float> distribution_X = std::uniform_real_distribution<float>(PIN_BOUNDARY_X_MIN, PIN_BOUNDARY_X_MAX);
 	std::uniform_real_distribution<float> distribution_Y = std::uniform_real_distribution<float>(PIN_BOUNDARY_Y_MIN, PIN_BOUNDARY_Y_MAX);
@@ -384,6 +390,39 @@ void Simulation::generatePinField(){
 			pins_generated++;
 		}
 
+	}
+}
+
+void Simulation::generateStaticPinField(){
+	for(int i=0;i<this->pinBodies.size();i++){
+		if(pinBodies[i]){
+			world.DestroyBody(pinBodies[i]);
+		}
+	}
+
+	std::vector<b2Vec2> pins(PIN_COUNT);
+	this->pinBodies	= std::vector<b2Body*>(PIN_COUNT);
+	this->pinData	= std::vector<UserData>(PIN_COUNT);
+
+	b2BodyDef									pinDef;
+	pinDef.type									= b2_staticBody;
+
+	b2CircleShape								pinSphere;
+	pinSphere.m_p.Set(0.0f, 0.0f);
+	pinSphere.m_radius							= PIN_RADIUS;
+
+	b2FixtureDef								pinFixtureDef;
+	pinFixtureDef.shape							= &pinSphere;
+	pinFixtureDef.density						= PIN_DENSITY;
+	pinFixtureDef.friction						= PIN_FRICTION;
+	pinFixtureDef.restitution					= PIN_RESTITUTION;
+
+	for(int i=0;i<staticPlayingField.size();i++){
+		pinDef.position.Set(staticPlayingField[i].x, staticPlayingField[i].y);
+		this->pinBodies[i] = world.CreateBody(&pinDef);
+		this->pinData[i]	= UserData(UserData::PINBALL_PIN, 1.0f, true, 0, 0, 0);
+		this->pinBodies[i]->SetUserData(&this->pinData[i]);
+		this->pinBodies[i]->CreateFixture(&pinFixtureDef);
 	}
 }
 
