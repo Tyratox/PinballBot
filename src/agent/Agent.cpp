@@ -18,7 +18,7 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const float	Agent::FLOAT_COMPARE_EPSILON	= 0.001f;
+const float	Agent::FLOAT_COMPARE_EPSILON	= 0.01f;
 const float Agent::VALUE_ADJUST_FRACTION	= 0.25f;
 const float Agent::EPSILON					= 0.15f;
 
