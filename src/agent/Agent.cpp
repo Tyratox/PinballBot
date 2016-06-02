@@ -12,12 +12,15 @@
 #include <string>
 #include <sstream>
 
+#include <Box2D/Box2D.h>
+
 #include "Agent.h"
 #include "State.h"
 #include "../action/Action.h"
 
-const float Agent::VALUE_ADJUST_FRACTION	= 0.25;
-const float Agent::EPSILON					= 0.15;
+const float	Agent::FLOAT_COMPARE_EPSILON	= 0.001f;
+const float Agent::VALUE_ADJUST_FRACTION	= 0.25f;
+const float Agent::EPSILON					= 0.15f;
 
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
@@ -35,7 +38,12 @@ void Agent::think(State state, float reward){
 	for(int i=0;i<states.size();i++){
 
 		//check if it is the "same" state
-		if(states[i].ballPosition == state.ballPosition && states[i].ballVelocity == state.ballVelocity){
+		if(
+			areEqualEpsilon(states[i].ballPosition.x, state.ballPosition.x) &&
+			areEqualEpsilon(states[i].ballPosition.y, state.ballPosition.y) &&
+			areEqualEpsilon(states[i].ballVelocity.x, state.ballVelocity.x) &&
+			areEqualEpsilon(states[i].ballVelocity.y, state.ballVelocity.y)
+		){
 			add = false;
 			currentStateIndex = i;
 		}
@@ -221,7 +229,7 @@ void Agent::loadPolicyFromFile(){
 		state.ballPosition	= ballPosition;
 		state.ballVelocity	= ballVelocity;
 
-		for (int i = 0; i < availableActions.size(); i++) {
+		for (int i = 0; i < availableActions.size(); i++) {//TODO check if the order in the header is the same as in available actions
 			state.values[availableActions[i]] = stof(partials[4 + i]);
 		}
 
@@ -246,4 +254,8 @@ std::vector<std::string> Agent::split(const std::string &s, char delim, std::vec
 		elems.push_back(item);
 	}
 	return elems;
+}
+
+bool Agent::areEqualEpsilon(float a, float b){
+	return fabs(a - b) < FLOAT_COMPARE_EPSILON;
 }

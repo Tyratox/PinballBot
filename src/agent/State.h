@@ -21,36 +21,6 @@ class State{
 
 	public:
 
-		static const int	FLOAT_PRECISION;
-
-	private:
-
-		/**
-		 * Reduces the precision of a floating point number in order to reduce the data load
-		 * @param	precision	int			The amount of decimal places to round to
-		 * @param	number		float		The floating point number to round
-		 * @return				float		The rounded number
-		 */
-		float roundFloat(const int &precision, const float &number);
-
-		/**
-		 * Reduces the precision of a b2Vec
-		 * @param	precision	int			The amount of decimal places to round floats to
-		 * @param	vec			b2Vec2		The vector whose precision should be reduced
-		 * @return				b2Vec2		The rounded number
-		 */
-		b2Vec2 reduceVectorPrecision(const int &precision, const b2Vec2 &vec);
-
-		/**
-		 * Reduces the precision of the state in order to reduce the data load
-		 * @param	precision	int			The amount of decimal places to round floats to
-		 * @return				void
-		 */
-		void reduceStatePrecision(const int &precision);
-
-
-	public:
-
 		std::map<Action*, float> 		values;
 
 		b2Vec2							ballPosition;

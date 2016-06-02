@@ -10,12 +10,15 @@
 #include <vector>
 #include <iostream>
 
+#include <Box2D/Box2D.h>
+
 #include "State.h"
 #include "../action/Action.h"
 
 class Agent{
 
 	public:
+		static const float					FLOAT_COMPARE_EPSILON;
 		static const float					VALUE_ADJUST_FRACTION;
 		static const float					EPSILON;
 
@@ -109,7 +112,6 @@ class Agent{
 
 		void loadPolicyFromFile();
 
-		std::vector<std::string> split(const std::string &s, char delim, std::vector<std::string> &elems);
 		/**
 		* Breaks a String into partials beteen the delimiter
 		* @param	s		String			String to break down
@@ -117,6 +119,15 @@ class Agent{
 		* @param	elems	vector<string>	vector where strings are saved into
 		* @return			vector<string>
 		*/
+		std::vector<std::string> split(const std::string &s, char delim, std::vector<std::string> &elems);
+
+		/**
+		 * Compares two floats based on an epsilon
+		 * @param	a		float	The first float to compare
+		 * @param	b		float	The second float to compare
+		 * @return			float
+		 */
+		bool areEqualEpsilon(float a, float b);
 
 };
 
