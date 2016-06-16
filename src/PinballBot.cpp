@@ -7,6 +7,7 @@
 
 #include <stdlib.h>     /* atexit */
 #include <iostream>
+#include <vector>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
@@ -70,6 +71,7 @@ void runSimulation(){
 	rlAgent					= &agent;
 
 	unsigned long long step = 0;
+	std::vector<float> collectedRewards(0, 0.0f);
 
 	while(!quit){
 
@@ -112,12 +114,18 @@ void runSimulation(){
 		if(!pause){
 
 			sim.step(TIME_STEP);
-			rlAgent->think(sim.getCurrentState(), sim.reward);
+			collectedRewards.push_back(sim.reward);
 
-				if(RENDER){
-					renderer->render();
-					capFramerate();
-				}
+			if(sim.isPlayingBallInsideCaptureFrame()){
+				rlAgent->think(sim.getCurrentState(), collectedRewards);
+				collectedRewards.clear();
+			}
+
+			if(RENDER){
+				renderer->render();
+				capFramerate();
+			}
+
 		}else{
 			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}

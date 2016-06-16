@@ -98,7 +98,7 @@ class Agent{
 		 * @param	reward		float		The returned reward
 		 * @return				void
 		 */
-		void think(State s, float reward = 0);
+		void think(State s, std::vector<float> collectedRewards);
 
 		/**
 		 * Saves the policy to a file
