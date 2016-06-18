@@ -212,48 +212,45 @@ void Agent::savePoliciesToFile(){
 }
 
 void Agent::loadPolicyFromFile(){
-	std::string					line;
+	std::string					line, header;
 	std::ifstream				policies;
 	std::vector<std::string>	partials;
 
 	states.clear();
 
+	printf("Reading and parsing policies.csv....\n");
+
 	policies.open("policies.csv");
-	//printf("start\n");
-	while (std::getline(policies, line)) {
-		std::getline(policies, line);
 
-		split(line, ';', partials);
+	if(std::getline(policies, header)){
+		while (std::getline(policies, line)){
 
-		//initialize State object
-		State state;
+			State	state;
+			b2Vec2	ballPosition;
+			b2Vec2	ballVelocity;
 
-		b2Vec2 ballPosition;
-		ballPosition.x	= stof(partials[0]);
-		ballPosition.y	= stof(partials[1]);
+			split(line, ';', partials);
 
-		b2Vec2 ballVelocity;
-		ballVelocity.x	= stof(partials[2]);
-		ballVelocity.y = stof(partials[3]);
+			ballPosition.x		= stof(partials[0]);
+			ballPosition.y		= stof(partials[1]);
+			state.ballPosition	= ballPosition;
 
+			ballVelocity.x		= stof(partials[2]);
+			ballVelocity.y		= stof(partials[3]);
+			state.ballVelocity	= ballVelocity;
 
-		state.ballPosition	= ballPosition;
-		state.ballVelocity	= ballVelocity;
+			for(int i=0; i<availableActions.size(); i++){ //TODO check if the order in the header is the same as in available actions
+				state.values[availableActions[i]] = stof(partials[4 + i]);
+			}
 
-		for (int i = 0; i < availableActions.size(); i++) {//TODO check if the order in the header is the same as in available actions
-			state.values[availableActions[i]] = stof(partials[4 + i]);
+			// push new state to states
+			states.push_back(state);
+
+			partials.clear();
 		}
-
-		// push new state to states
-		states.push_back(state);
-		
-		//printf("read line: %s\n", line.c_str());
-		//printf("read line: %s\n", partials[0].c_str());
-		//printf("read line: %s\n", partials[1].c_str());
-		//printf("read line: %s\n", partials[2].c_str());
-
-		partials.clear();
 	}
+
+	printf("Read and parsed policies.csv, %lu states were imported.\n", states.size());
 
 	return;
 }

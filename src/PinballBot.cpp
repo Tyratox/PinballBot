@@ -22,7 +22,7 @@
 
 static const bool					SIMULATION			= true;
 
-static const bool					RENDER				= false;
+static const bool					RENDER				= true;
 static const float					FPS					= 60.0f;
 static const float					TIME_STEP			= 1.0f / FPS;
 static const float					TICK_INTERVAL		= 1000.0f / FPS;
