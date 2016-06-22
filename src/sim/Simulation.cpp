@@ -29,6 +29,15 @@ const float			Simulation::FIELD_WIDTH							= 0.5f;
 const float			Simulation::FIELD_HEIGHT						= 1.0f;
 const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
+const float			Simulation::FIELD_CAPTURE_X_MIN					= 0.0f;
+const float			Simulation::FIELD_CAPTURE_X_MAX					= (5 * FIELD_WIDTH / 6);
+
+const float			Simulation::FIELD_CAPTURE_Y_MIN					= (6 * FIELD_HEIGHT / 8);
+const float			Simulation::FIELD_CAPTURE_Y_MAX					= (FIELD_HEIGHT);
+
+const float			Simulation::KICKER_BORDER_POS_X					= (5 * FIELD_WIDTH / 6);
+const float			Simulation::KICKER_BORDER_POS_Y					= (6 * FIELD_HEIGHT / 8);
+
 const float			Simulation::GRAVITY_X							= 0;
 const float			Simulation::GRAVITY_Y							= std::sin(FIELD_SLOPE) * (9.81f - 2.81/*MAAGIC*/); /* positive, cause we start in the top left corner */
 
@@ -74,6 +83,12 @@ const float			Simulation::FLIPPER_REV_JOINT_UPPER_ANGLE		= (float) 0.2f * b2_pi;
 
 const float			Simulation::FLIPPER_REV_MOTOR_SPEED				= (float) 10 * b2_pi; /* rad^-1 */
 const float			Simulation::FLIPPER_REV_MOTOR_MAX_TORQUE		= 5.0f;
+
+const float			Simulation::FLIPPER_LEFT_POS_X					= (FIELD_HEIGHT/8);
+const float			Simulation::FLIPPER_RIGHT_POS_X					= (3*FIELD_HEIGHT/8);
+
+const float			Simulation::FLIPPER_LEFT_POS_Y					= (7*FIELD_HEIGHT/8);
+const float			Simulation::FLIPPER_RIGHT_POS_Y					= (7*FIELD_HEIGHT/8);
 
 Simulation::Simulation():
 	contactListener(std::bind(&Simulation::gameOver, this), std::bind(&Simulation::getReward, this, std::placeholders::_1)),
@@ -139,7 +154,7 @@ Simulation::Simulation():
 	/* kicker Border */
 	b2BodyDef									kickerBorderDef;
 	kickerBorderDef.type						= b2_staticBody;
-	kickerBorderDef.position.Set(5 * FIELD_WIDTH / 6, 6 * FIELD_HEIGHT / 8);
+	kickerBorderDef.position.Set(KICKER_BORDER_POS_X, KICKER_BORDER_POS_Y);
 
 	kickerBorderBody							= world.CreateBody(&kickerBorderDef);
 
@@ -194,8 +209,8 @@ Simulation::Simulation():
 	flipperLeftDef.type							= b2_dynamicBody;
 	flipperRightDef.type						= b2_dynamicBody;
 
-	flipperLeftDef.position.Set((FIELD_HEIGHT/8), (7*FIELD_HEIGHT/8));
-	flipperRightDef.position.Set((3*FIELD_HEIGHT/8), (7*FIELD_HEIGHT/8));
+	flipperLeftDef.position.Set(FLIPPER_LEFT_POS_X, FLIPPER_LEFT_POS_Y);
+	flipperRightDef.position.Set(FLIPPER_RIGHT_POS_X, FLIPPER_RIGHT_POS_Y);
 
 	flipperLeftBody								= world.CreateBody(&flipperLeftDef);
 	flipperRightBody							= world.CreateBody(&flipperRightDef);
@@ -318,6 +333,7 @@ void Simulation::respawnBall(){
 	/* Init playing ball */
 	b2BodyDef									ballDef;
 	ballDef.type								= b2_dynamicBody;
+	ballDef.bullet								= true; //exact calc of collisions
 	ballDef.position.Set(11 * FIELD_WIDTH / 12, 4 * FIELD_HEIGHT / 8);
 	ballBody									= world.CreateBody(&ballDef);
 
@@ -467,6 +483,11 @@ void Simulation::debugPlayingBall(){
 	float32 angle								= this->ballBody->GetAngle();
 
 	printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+}
+
+bool Simulation::isPlayingBallInsideCaptureFrame(){
+	b2Vec2 pos = this->ballBody->GetPosition();
+	return (pos.x > FIELD_CAPTURE_X_MIN && pos.x < FIELD_CAPTURE_X_MAX) && (pos.y > FIELD_CAPTURE_Y_MIN && pos.y < FIELD_CAPTURE_Y_MAX);
 }
 
 State Simulation::getCurrentState(){

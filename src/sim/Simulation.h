@@ -33,6 +33,12 @@ class Simulation{
 		static const float			FIELD_HEIGHT;
 		static const float			FIELD_SLOPE;
 
+		static const float			FIELD_CAPTURE_X_MIN;
+		static const float			FIELD_CAPTURE_X_MAX;
+
+		static const float			FIELD_CAPTURE_Y_MIN;
+		static const float			FIELD_CAPTURE_Y_MAX;
+
 		static const float			GRAVITY_X;
 		static const float			GRAVITY_Y;
 
@@ -58,6 +64,9 @@ class Simulation{
 		static const float			KICKER_FRICTION;
 		static const float			KICKER_RESTITUTION;
 
+		static const float			KICKER_BORDER_POS_X;
+		static const float			KICKER_BORDER_POS_Y;
+
 		static const float			GAME_OVER_HEIGHT;
 		static const float			GAME_OVER_WIDTH;
 
@@ -78,6 +87,12 @@ class Simulation{
 
 		static const float			FLIPPER_REV_MOTOR_SPEED;
 		static const float			FLIPPER_REV_MOTOR_MAX_TORQUE;
+
+		static const float			FLIPPER_LEFT_POS_X;
+		static const float			FLIPPER_RIGHT_POS_X;
+
+		static const float			FLIPPER_LEFT_POS_Y;
+		static const float			FLIPPER_RIGHT_POS_Y;
 
 	/* Then some private things */
 	private:
@@ -124,7 +139,7 @@ class Simulation{
 		UserData										gameOverData;
 		UserData										flipperData;
 
-		std::vector<b2Vec2>						staticPlayingField;
+		std::vector<b2Vec2>								staticPlayingField;
 
 	/* And last but not least the public functions */
 	public:
@@ -162,7 +177,7 @@ class Simulation{
 		void generateRandomPinField();
 
 		/**
-		 *
+		 * Generates a static pin field
 		 */
 		void generateStaticPinField();
 
@@ -215,6 +230,14 @@ class Simulation{
 		 */
 		void debugPlayingBall();
 
+		/**
+		 * Returns if the playing ball is inside the capture frame
+		 */
+		bool isPlayingBallInsideCaptureFrame();
+
+		/**
+		 * Returns the current state
+		 */
 		State getCurrentState();
 
 };

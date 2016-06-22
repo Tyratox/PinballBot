@@ -6,7 +6,12 @@
 //============================================================================
 
 #include <stdlib.h>     /* atexit */
+#include <cstdio>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <numeric>
+#include <ctime>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
@@ -56,20 +61,22 @@ void capFramerate(void) {
 
 void runSimulation(){
 
-	Simulation 				sim;
+	Simulation 									sim;
+	SDL_Event									e;
+	Agent										agent(ActionsSim::actionsAvailable(sim));
+	rlAgent										= &agent;
+
+	unsigned long long steps					= 0;
+	double statsRewardsCollected				= 0;
+	unsigned long long timeLastLog				= std::time(nullptr);
 
 	if(RENDER){
 		renderer			= new Renderer(320, 640, sim.getWorld());
 	}
 
-	SDL_Event				e;
 
-	std::vector<Action*>	availableActions = ActionsSim::actionsAvailable(sim);
 
-	Agent					agent(availableActions);
-	rlAgent					= &agent;
-
-	unsigned long long step = 0;
+	std::vector<float> rewardsCollected(0, 0.0f);
 
 	while(!quit){
 
@@ -112,40 +119,82 @@ void runSimulation(){
 		if(!pause){
 
 			sim.step(TIME_STEP);
-			rlAgent->think(sim.getCurrentState(), sim.reward);
+			rewardsCollected.push_back(sim.reward);
 
-				if(RENDER){
-					renderer->render();
-					capFramerate();
-				}
+			if(sim.isPlayingBallInsideCaptureFrame()){
+				rlAgent->think(sim.getCurrentState(), rewardsCollected);
+				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
+				rewardsCollected.clear();
+			}
+
+			if(RENDER){
+				renderer->render();
+				capFramerate();
+			}
+
 		}else{
 			next_time = SDL_GetTicks() + TICK_INTERVAL;
 		}
 
-		if(true){
-			if(step % DEBUG_INTERVAL == 0){
-				printf("STEP #%lld, State size: %ld\n", step, rlAgent->states.size());
+		if(steps != 0){
+			if(steps % DEBUG_INTERVAL == 0){
+				printf("step #%lld | amount of states: %ld\n", steps, rlAgent->states.size());
 
-				if(step % SAVE_INTERVAL == 0){
+				if(steps % SAVE_INTERVAL == 0){
 					rlAgent->savePoliciesToFile();
+
+					//Log stats
+					std::ofstream statsFile;
+
+					statsFile.open("stats.csv", std::ios_base::app);//Append line
+					//steps|current time|amaount of states|∆time / ∆loops|rewards collected
+					statsFile <<
+							steps << ";" <<
+							std::time(nullptr) << ";" <<
+							rlAgent->states.size() << ";" <<
+							( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ) << ";" <<
+							statsRewardsCollected << std::endl;
+
+					statsRewardsCollected = 0;
 				}
+
 			}
 		}
-		step++;
+		steps++;
 	}
 }
 
-void shutdownHook(){//doesn't work yet, vector empty :/
-	rlAgent->savePoliciesToFile();
+void shutdownHook(){
+	rlAgent->savePoliciesToFile(); //doesn't work yet, vector empty :/
+
+	//archive previous log file
+	std::time_t rawtime;
+	std::tm* timeinfo;
+	char buffer [20];
+
+	std::time(&rawtime);
+	timeinfo = std::localtime(&rawtime);
+
+	std::strftime(buffer, 20, "%Y-%m-%d-%H-%M", timeinfo);
+	std::puts(buffer);
+
+	rename("stats.csv", (std::string("stats-") + std::string(buffer) + std::string(".csv")).c_str());
+}
+
+void initLogFile(){
+	std::ofstream statsFile;
+	statsFile.open("stats.csv");
+	statsFile << "STEPS;TIME;AMOUNT_OF_STATES;AVERAGE_TIME_PER_LOOP;REWARDS_COLLECTED" << std::endl;
 }
 
 int main(int argc, char** argv) {
 	atexit(shutdownHook);
 
+	initLogFile();
+
 	if(SIMULATION){
 		runSimulation();
 	}
-
 
 	return 0;
 }
