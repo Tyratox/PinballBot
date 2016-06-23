@@ -366,3 +366,4 @@ paket-files/
 PinballBot/PinballBot.vcxproj
 *.filters
 *.vcxproj
+*.csv
