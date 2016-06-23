@@ -33,6 +33,7 @@ static const float					TICK_INTERVAL		= 1000.0f / FPS;
 
 static const unsigned long long		SAVE_INTERVAL		= 100000;
 static const unsigned long long		DEBUG_INTERVAL		= 10000;
+static const unsigned long long		SLEEP_UNTIL_RESPAWN	= 300;//1 step ≈ 1/60 sec in-game, 300 steps ≈ 5 secs in-game
 
 const Uint8*						KEYS				= SDL_GetKeyboardState(NULL);
 
@@ -69,6 +70,9 @@ void runSimulation(){
 	unsigned long long steps					= 0;
 	double statsRewardsCollected				= 0;
 	unsigned long long timeLastLog				= std::time(nullptr);
+	unsigned long long gameOvers				= 0;
+
+	unsigned long long stepStartedSleeping		= 0;
 
 	if(RENDER){
 		renderer			= new Renderer(320, 640, sim.getWorld());
@@ -121,10 +125,33 @@ void runSimulation(){
 			sim.step(TIME_STEP);
 			rewardsCollected.push_back(sim.reward);
 
+			if(sim.reward == 0.0f){
+				gameOvers++;
+			}
+
 			if(sim.isPlayingBallInsideCaptureFrame()){
 				rlAgent->think(sim.getCurrentState(), rewardsCollected);
 				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
 				rewardsCollected.clear();
+			}
+
+			if(sim.isPlayingBallSleeping()){
+				/* The ball isn't moving anymore
+				 * - The ball is stuck => not good, needs to respawn
+				 */
+
+				if(stepStartedSleeping == 0){
+					//not slept until now
+					stepStartedSleeping		= steps;
+				}else{
+					//was already sleeping, respawn if it is already stuck for a certain amount of steps
+					if((steps - stepStartedSleeping) > SLEEP_UNTIL_RESPAWN){
+						printf("Ball is stuck\n");
+						sim.respawnBall();
+					}
+				}
+			}else if(stepStartedSleeping != 0){
+				stepStartedSleeping = 0;
 			}
 
 			if(RENDER){
@@ -147,15 +174,17 @@ void runSimulation(){
 					std::ofstream statsFile;
 
 					statsFile.open("stats.csv", std::ios_base::app);//Append line
-					//steps|current time|amaount of states|∆time / ∆loops|rewards collected
+					//steps|current time|amount of states|∆time / ∆loops|rewards collected | gameovers
 					statsFile <<
 							steps << ";" <<
 							std::time(nullptr) << ";" <<
 							rlAgent->states.size() << ";" <<
 							( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ) << ";" <<
-							statsRewardsCollected << std::endl;
+							statsRewardsCollected << ";" <<
+							gameOvers << std::endl;
 
 					statsRewardsCollected = 0;
+					gameOvers = 0;
 				}
 
 			}
@@ -184,7 +213,7 @@ void shutdownHook(){
 void initLogFile(){
 	std::ofstream statsFile;
 	statsFile.open("stats.csv");
-	statsFile << "STEPS;TIME;AMOUNT_OF_STATES;AVERAGE_TIME_PER_LOOP;REWARDS_COLLECTED" << std::endl;
+	statsFile << "STEPS;TIME;AMOUNT_OF_STATES;AVERAGE_TIME_PER_LOOP;REWARDS_COLLECTED;GAMEOVERS" << std::endl;
 }
 
 int main(int argc, char** argv) {
