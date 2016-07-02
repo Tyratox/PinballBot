@@ -143,7 +143,10 @@ void runSimulation(){
 					//if it stays out of it for too long, respawn it
 					if((steps - stepStartedBeingOutsideCF) > OUTSIDE_CF_UNTIL_RESPAWN){
 						printf("The ball was outside the capture frame for too long, respawn!\n");
+						sim.debugPlayingBall();
 						sim.respawnBall();
+
+						stepStartedBeingOutsideCF = 0;
 					}
 				}
 			}

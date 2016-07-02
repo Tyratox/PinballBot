@@ -480,9 +480,9 @@ void Simulation::disableRightFlipper(){
 
 void Simulation::debugPlayingBall(){
 	b2Vec2 position								= this->ballBody->GetPosition();
-	float32 angle								= this->ballBody->GetAngle();
+	b2Vec2 velocity								= this->ballBody->GetLinearVelocity();
 
-	printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+	printf("X:%f Y:%f VX:%f VY:%f ANGLE:%f\n", position.x, position.y, velocity.x, velocity.y, this->ballBody->GetAngle());
 }
 
 bool Simulation::isPlayingBallInsideCaptureFrame(){
