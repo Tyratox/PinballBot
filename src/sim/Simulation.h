@@ -236,11 +236,6 @@ class Simulation{
 		bool isPlayingBallInsideCaptureFrame();
 
 		/**
-		 * Returns if the playing ball is "sleeping" / isn't moving for a while
-		 */
-		bool isPlayingBallSleeping();
-
-		/**
 		 * Returns the current state
 		 */
 		State getCurrentState();

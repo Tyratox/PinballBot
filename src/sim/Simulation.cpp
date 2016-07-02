@@ -490,10 +490,6 @@ bool Simulation::isPlayingBallInsideCaptureFrame(){
 	return (pos.x > FIELD_CAPTURE_X_MIN && pos.x < FIELD_CAPTURE_X_MAX) && (pos.y > FIELD_CAPTURE_Y_MIN && pos.y < FIELD_CAPTURE_Y_MAX);
 }
 
-bool Simulation::isPlayingBallSleeping(){
-	return (this->ballBody->GetLinearVelocity() == b2Vec2_zero);
-}
-
 State Simulation::getCurrentState(){
 	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity());
 }
