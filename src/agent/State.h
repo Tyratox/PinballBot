@@ -19,20 +19,31 @@
 
 class State{
 
+	private:
+		class Coords{
+			public:
+				char x[8], y[8];
+
+				Coords(const char* x = "0", const char* y = "0");
+
+				bool operator==(const Coords& cmp){
+					return strcmp(x, cmp.x) == 0 && strcmp(y, cmp.y) == 0;
+				}
+			};
+
 	public:
 
 		std::map<Action*, float> 		values;
 
-		b2Vec2							ballPosition;
-		b2Vec2							ballVelocity;
+		Coords							ballPosition;
+		Coords							ballVelocity;
 
 		/**
 		 * Inits a state
 		 * @param	ballPosition		b2Vec2					The ball position
 		 * @param	ballVelocity		b2Vec2					The ball velocity
-		 * @param	availableActions	std::vector<Action*>	The actions available, needed for the setting the default values of the 'values' map
 		 */
-		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0), const std::vector<Action*> &availableActions = std::vector<Action*>());
+		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0));
 
 		/**
 		 * Gets the expected reward if a specific action is taken
@@ -51,6 +62,17 @@ class State{
 
 		void setValue(Action *action, float value);
 
+		/**
+		 * Rounds a float to a char
+		 * @param	f				float32	The floating point number to round
+		 * @return					char*
+		 */
+		char* round(float32 f);
+
+
+		bool operator==(const State& cmp){
+			return ballPosition == cmp.ballPosition && ballVelocity == cmp.ballVelocity;
+		}
 };
 
 

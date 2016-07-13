@@ -1,0 +1,160 @@
+/*
+ * PinballBot.h
+ *
+ */
+
+#ifndef PINBALLBOT_H_
+#define PINBALLBOT_H_
+
+#include <stdlib.h>     /* atexit */
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <numeric>
+#include <ctime>
+#include <string>
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_main.h>
+
+#include "action/ActionsSim.cpp"
+
+#include "sim/Simulation.h"
+#include "sim/Renderer.h"
+
+#include "agent/Agent.h"
+#include "agent/State.h"
+
+#include "stats/StatsLogger.h"
+
+class PinballBot{
+
+	public:
+
+		static const bool					SIMULATION;
+
+		static const bool					RENDER;
+		static const float					FPS;
+		static const float					TIME_STEP;
+		static const float					TICK_INTERVAL;
+
+		static const unsigned long long		SAVE_INTERVAL;
+		static const unsigned long long		LOG_INTERVAL;
+		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
+
+		static const std::string			STATS_FILE;
+
+	private:
+
+		const Uint8*						KEYS;
+
+		bool								pause;
+		bool								quit;
+
+		Uint32								nextTime;
+
+		Agent*								rlAgent;
+		Renderer*							renderer;
+
+		StatsLogger							statsLogger;
+
+		unsigned long long 					steps;
+		double 								statsRewardsCollected;
+		unsigned long long 					timeLastLog;
+		unsigned long long 					gameOvers;
+
+		unsigned long long 					stepStartedBeingOutsideCF;
+
+		std::vector<float> 					rewardsCollected;
+
+	public:
+
+		PinballBot();
+
+		/**
+		 * Returns the time left for the next frame
+		 * @return		Uint32
+		 */
+		Uint32 timeLeft();
+
+		/**
+		 * Delays the next frame if it was slower than TICK_INTERVAL
+		 * @return		void
+		 */
+		void capFramerate();
+
+		/**
+		 * Handles the keys being pressed
+		 * @param	sim	Simulation		The running simulation
+		 * @param	e	SDL_Event		An sdl event
+		 * @return		void
+		 */
+
+		void handleKeys(Simulation &sim, SDL_Event &e);
+
+		/**
+		 * Checks whether the ball is in- or outside the capture frame and if so for how long.
+		 * If it stayed there longer than OUTSIDE_CF_UNTIL_RESPAWN, respawn the ball
+		 * @return		void
+		 */
+
+		void preventStablePositionsOutsideCF(Simulation &sim);
+
+		/**
+		 * Runs the simulation
+		 * @return		void
+		 */
+		void runSimulation();
+
+		/**
+		 * The main shutdown hook
+		 * @return		void
+		 */
+		void shutdownHook();
+
+		/**
+		 * Logs the steps count
+		 * @return		std::string
+		 */
+
+		std::string logSteps();
+
+		/**
+		 * Logs the current time
+		 * @return		std::string
+		 */
+
+		std::string logTime();
+
+		/**
+		 * Logs the amount of states
+		 * @return		std::string
+		 */
+
+		std::string logAmountOfStates();
+
+		/**
+		 * Logs the average time per loop
+		 * @return		std::string
+		 */
+
+		std::string logAverageTimePerLoop();
+
+		/**
+		 * Logs the rewards collected
+		 * @return		std::string
+		 */
+
+		std::string logRewardsCollected();
+
+		/**
+		 * Logs the amount of gameovers
+		 * @return		std::string
+		 */
+
+		std::string logGameOvers();
+
+};
+
+#endif /* PINBALLBOT_H_ */

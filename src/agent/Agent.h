@@ -8,6 +8,7 @@
 #define AGENT_AGENT_H_
 
 #include <vector>
+#include <deque>
 #include <iostream>
 
 #include <Box2D/Box2D.h>
@@ -18,7 +19,8 @@
 class Agent{
 
 	public:
-		static const float					FLOAT_COMPARE_EPSILON;
+		static const int					STATES_TO_BACKPORT;
+
 		static const float					VALUE_ADJUST_FRACTION;
 		static const float					EPSILON;
 
@@ -83,8 +85,7 @@ class Agent{
 
 		std::vector<State>					states;
 
-		int									lastStateIndex;
-		Action*								lastAction;
+		std::deque<std::pair<int, Action*>>	lastActions;
 
 		/**
 		 * Init the Agent class
@@ -120,14 +121,6 @@ class Agent{
 		* @return			vector<string>
 		*/
 		std::vector<std::string> split(const std::string &s, char delim, std::vector<std::string> &elems);
-
-		/**
-		 * Compares two floats based on an epsilon
-		 * @param	a		float	The first float to compare
-		 * @param	b		float	The second float to compare
-		 * @return			float
-		 */
-		bool areEqualEpsilon(float a, float b);
 
 };
 

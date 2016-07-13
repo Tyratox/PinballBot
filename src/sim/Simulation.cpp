@@ -29,6 +29,16 @@ const float			Simulation::FIELD_WIDTH							= 0.5f;
 const float			Simulation::FIELD_HEIGHT						= 1.0f;
 const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
+/**
+ * X:	0.00f - 0.42f [= 43 possibilities]
+ * Y:	0.75f - 1.00f [= 26 possibilities]
+ *
+ * VX:	0.00f - 9.99f [9^3 = 729 possibilities]
+ * VY:	0.00f - 9.99f [9^3 = 729 possibilities]
+ *
+ * Max amount of states: 43 * 26 * 729^2 = 594'151'038
+ */
+
 const float			Simulation::FIELD_CAPTURE_X_MIN					= 0.0f;
 const float			Simulation::FIELD_CAPTURE_X_MAX					= (5 * FIELD_WIDTH / 6);
 

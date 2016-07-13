@@ -10,11 +10,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 #include <numeric>
 #include <ctime>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
+
+#include "PinballBot.h"
 
 #include "action/ActionsSim.cpp"
 
@@ -24,100 +27,139 @@
 #include "agent/Agent.h"
 #include "agent/State.h"
 
-static const bool					SIMULATION					= true;
+#include "stats/StatsLogger.h"
 
-static const bool					RENDER						= false;
-static const float					FPS							= 60.0f;
-static const float					TIME_STEP					= 1.0f / FPS;
-static const float					TICK_INTERVAL				= 1000.0f / FPS;
+const bool						PinballBot::SIMULATION					= true;
 
-static const unsigned long long		SAVE_INTERVAL				= 100000;
-static const unsigned long long		DEBUG_INTERVAL				= 10000;
-static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
+const bool						PinballBot::RENDER						= false;
+const float						PinballBot::FPS							= 60.0f;
+const float						PinballBot::TIME_STEP					= 1.0f / FPS;
+const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
 
-const Uint8*						KEYS						= SDL_GetKeyboardState(NULL);
+const unsigned long long		PinballBot::SAVE_INTERVAL				= 100000;
+const unsigned long long		PinballBot::LOG_INTERVAL				= 10000;
+const unsigned long long		PinballBot::OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
 
-bool								pause						= false;
-bool								quit						= false;
+const std::string				PinballBot::STATS_FILE					= "stats.csv";
 
-static Uint32						next_time					= 0;
+PinballBot::PinballBot() : statsLogger(), rewardsCollected(0, 0.0f){
 
-Agent*								rlAgent;
-Renderer*							renderer;
+	KEYS							= SDL_GetKeyboardState(NULL);
 
-Uint32 timeLeft(void) {
+	pause							= false;
+	quit							= false;
+
+	nextTime						= 0;
+
+	steps							= 0;
+	statsRewardsCollected			= 0;
+	timeLastLog						= std::time(nullptr);
+	gameOvers						= 0;
+
+	stepStartedBeingOutsideCF		= 0;
+
+	rlAgent							= nullptr;
+	renderer						= nullptr;
+
+	statsLogger.registerLoggingColumn("STEPS",					std::bind(&PinballBot::logSteps, this));
+	statsLogger.registerLoggingColumn("TIME",					std::bind(&PinballBot::logTime, this));
+	statsLogger.registerLoggingColumn("AMOUNT_OF_STATES",		std::bind(&PinballBot::logAmountOfStates, this));
+	statsLogger.registerLoggingColumn("AVERAGE_TIME_PER_LOOP",	std::bind(&PinballBot::logAverageTimePerLoop, this));
+	statsLogger.registerLoggingColumn("REWARDS_COLLECTED",		std::bind(&PinballBot::logRewardsCollected, this));
+	statsLogger.registerLoggingColumn("GAMEOVERS",				std::bind(&PinballBot::logGameOvers, this));
+
+	statsLogger.initLog(STATS_FILE);
+}
+
+Uint32 PinballBot::timeLeft() {
     Uint32 now = SDL_GetTicks();
 
-    if(next_time <= now){
+    if(nextTime <= now){
     	return 0;
     }else{
-    	return next_time - now;
+    	return nextTime - now;
     }
 }
 
-void capFramerate(void) {
+void PinballBot::capFramerate() {
 	SDL_Delay(timeLeft());
-	next_time += TICK_INTERVAL;
+	nextTime += TICK_INTERVAL;
 }
 
-void runSimulation(){
+void PinballBot::handleKeys(Simulation &sim, SDL_Event &e){
+	while( SDL_PollEvent( &e ) != 0 ){
+		if( e.type == SDL_QUIT ){
+			quit = true;
+		}
+
+		if (KEYS[SDL_SCANCODE_LEFT]){
+			sim.enableLeftFlipper();
+		}else{
+			sim.disableLeftFlipper();
+		}
+
+		if (KEYS[SDL_SCANCODE_RIGHT]){
+			sim.enableRightFlipper();
+		}else{
+			sim.disableRightFlipper();
+		}
+
+		if (KEYS[SDL_SCANCODE_SPACE]){
+			pause = true;
+		}else{
+			pause = false;
+		}
+
+		if (KEYS[SDL_SCANCODE_P]){
+			sim.generateRandomPinField();
+		}
+
+		if (KEYS[SDL_SCANCODE_S]){
+			rlAgent->savePoliciesToFile();
+		}
+
+	}
+}
+
+void PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
+	if(sim.isPlayingBallInsideCaptureFrame()){
+		rlAgent->think(sim.getCurrentState(), rewardsCollected);
+		statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
+		rewardsCollected.clear();
+
+		stepStartedBeingOutsideCF = 0;
+	}else{
+		if(stepStartedBeingOutsideCF == 0){
+			//when does the ball leave the CF
+			stepStartedBeingOutsideCF		= steps;
+		}else{
+			//if it stays out of it for too long, respawn it
+			if((steps - stepStartedBeingOutsideCF) > OUTSIDE_CF_UNTIL_RESPAWN){
+				printf("The ball was outside the capture frame for too long, respawn!\n");
+				sim.debugPlayingBall();
+				sim.respawnBall();
+
+				stepStartedBeingOutsideCF = 0;
+			}
+		}
+	}
+}
+
+void PinballBot::runSimulation(){
 
 	Simulation 										sim;
 	SDL_Event										e;
 	Agent											agent(ActionsSim::actionsAvailable(sim));
 	rlAgent											= &agent;
 
-	unsigned long long steps						= 0;
-	double statsRewardsCollected					= 0;
-	unsigned long long timeLastLog					= std::time(nullptr);
-	unsigned long long gameOvers					= 0;
-
-	unsigned long long stepStartedBeingOutsideCF	= 0;
-
 	if(RENDER){
 		renderer			= new Renderer(320, 640, sim.getWorld());
 	}
 
-
-
-	std::vector<float> rewardsCollected(0, 0.0f);
-
 	while(!quit){
 
 		if(RENDER){
-			while( SDL_PollEvent( &e ) != 0 ){
-				//User requests quit
-				if( e.type == SDL_QUIT ){
-					quit = true;
-				}
-
-				if (KEYS[SDL_SCANCODE_LEFT]){
-					sim.enableLeftFlipper();
-				}else{
-					sim.disableLeftFlipper();
-				}
-
-				if (KEYS[SDL_SCANCODE_RIGHT]){
-					sim.enableRightFlipper();
-				}else{
-					sim.disableRightFlipper();
-				}
-
-				if (KEYS[SDL_SCANCODE_SPACE]){
-					pause = true;
-				}else{
-					pause = false;
-				}
-
-				if (KEYS[SDL_SCANCODE_P]){
-					sim.generateRandomPinField();
-				}
-
-				if (KEYS[SDL_SCANCODE_S]){
-					rlAgent->savePoliciesToFile();
-				}
-
-			}
+			handleKeys(sim, e);
 		}
 
 		if(!pause){
@@ -129,27 +171,7 @@ void runSimulation(){
 				gameOvers++;
 			}
 
-			if(sim.isPlayingBallInsideCaptureFrame()){
-				rlAgent->think(sim.getCurrentState(), rewardsCollected);
-				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
-				rewardsCollected.clear();
-
-				stepStartedBeingOutsideCF = 0;
-			}else{
-				if(stepStartedBeingOutsideCF == 0){
-					//when does the ball leave the CF
-					stepStartedBeingOutsideCF		= steps;
-				}else{
-					//if it stays out of it for too long, respawn it
-					if((steps - stepStartedBeingOutsideCF) > OUTSIDE_CF_UNTIL_RESPAWN){
-						printf("The ball was outside the capture frame for too long, respawn!\n");
-						sim.debugPlayingBall();
-						sim.respawnBall();
-
-						stepStartedBeingOutsideCF = 0;
-					}
-				}
-			}
+			preventStablePositionsOutsideCF(sim);
 
 			if(RENDER){
 				renderer->render();
@@ -157,28 +179,17 @@ void runSimulation(){
 			}
 
 		}else{
-			next_time = SDL_GetTicks() + TICK_INTERVAL;
+			nextTime = SDL_GetTicks() + TICK_INTERVAL;
 		}
 
 		if(steps != 0){
-			if(steps % DEBUG_INTERVAL == 0){
+			if(steps % LOG_INTERVAL == 0){
 				printf("step #%lld | amount of states: %ld\n", steps, rlAgent->states.size());
 
 				if(steps % SAVE_INTERVAL == 0){
 					rlAgent->savePoliciesToFile();
 
-					//Log stats
-					std::ofstream statsFile;
-
-					statsFile.open("stats.csv", std::ios_base::app);//Append line
-					//steps|current time|amount of states|∆time / ∆loops|rewards collected | gameovers
-					statsFile <<
-							steps << ";" <<
-							std::time(nullptr) << ";" <<
-							rlAgent->states.size() << ";" <<
-							( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ) << ";" <<
-							statsRewardsCollected << ";" <<
-							gameOvers << std::endl;
+					statsLogger.log(STATS_FILE);
 
 					statsRewardsCollected = 0;
 					gameOvers = 0;
@@ -190,21 +201,36 @@ void runSimulation(){
 	}
 }
 
-void shutdownHook(){
+void PinballBot::shutdownHook(){
 	rlAgent->savePoliciesToFile(); //doesn't work yet, vector empty :/
 
 	//archive previous log file
-	std::time_t rawtime;
-	std::tm* timeinfo;
-	char buffer [20];
+	statsLogger.archiveLog(STATS_FILE);
+}
 
-	std::time(&rawtime);
-	timeinfo = std::localtime(&rawtime);
 
-	std::strftime(buffer, 20, "%Y-%m-%d-%H-%M", timeinfo);
-	std::puts(buffer);
+std::string PinballBot::logSteps(){
+	return std::to_string(steps);
+}
 
-	rename("stats.csv", (std::string("stats-") + std::string(buffer) + std::string(".csv")).c_str());
+std::string PinballBot::logTime(){
+	return std::to_string(std::time(nullptr));
+}
+
+std::string PinballBot::logAmountOfStates(){
+	return std::to_string(rlAgent->states.size());
+}
+
+std::string PinballBot::logAverageTimePerLoop(){
+	return std::to_string(( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ));
+}
+
+std::string PinballBot::logRewardsCollected(){
+	return std::to_string(statsRewardsCollected);
+}
+
+std::string PinballBot::logGameOvers(){
+	return std::to_string(gameOvers);
 }
 
 void initLogFile(){
@@ -214,12 +240,13 @@ void initLogFile(){
 }
 
 int main(int argc, char** argv) {
-	atexit(shutdownHook);
 
-	initLogFile();
+	PinballBot bot;
 
-	if(SIMULATION){
-		runSimulation();
+	//atexit(shutdownHook);
+
+	if(PinballBot::SIMULATION){
+		bot.runSimulation();
 	}
 
 	return 0;

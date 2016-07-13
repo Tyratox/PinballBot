@@ -4,6 +4,9 @@
  * Combines all simulation actions
  */
 
+#ifndef ACTIONS_SIM
+#define ACTIONS_SIM
+
 #include <iostream>
 #include <vector>
 
@@ -30,3 +33,5 @@ class ActionsSim{
 			return vec;
 		}
 };
+
+#endif /* ACTIONS_SIM */

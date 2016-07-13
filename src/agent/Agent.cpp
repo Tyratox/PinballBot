@@ -18,13 +18,13 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const float	Agent::FLOAT_COMPARE_EPSILON	= 0.01f;
+const int	Agent::STATES_TO_BACKPORT		= 30;
+
 const float Agent::VALUE_ADJUST_FRACTION	= 0.25f;
 const float Agent::EPSILON					= 0.15f;
 
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
-	lastStateIndex = -1;
 
 	loadPolicyFromFile();
 }
@@ -32,18 +32,14 @@ Agent::Agent(std::vector<Action*> availableActions):
 void Agent::think(State state, std::vector<float> collectedRewards){
 	//first adjust the value for the taken action
 
-	bool 	add = true;
-	int		currentStateIndex = 0;
+	bool 	add					= true;
+	int		currentStateIndex	= 0;
 
 	for(int i=0;i<states.size();i++){
 
-		//check if it is the "same" state
-		if(
-			areEqualEpsilon(states[i].ballPosition.x, state.ballPosition.x) &&
-			areEqualEpsilon(states[i].ballPosition.y, state.ballPosition.y) &&
-			areEqualEpsilon(states[i].ballVelocity.x, state.ballVelocity.x) &&
-			areEqualEpsilon(states[i].ballVelocity.y, state.ballVelocity.y)
-		){
+		//check if it is the same state
+		if(states[i] == state){
+			//printf("(%s | %s) || (%s | %s)\n", states[i].ballPosition.x, states[i].ballPosition.y, state.ballPosition.x, state.ballPosition.y);
 			add = false;
 			currentStateIndex = i;
 
@@ -51,40 +47,56 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 		}
 	}
 
+	//If its a new state, add it
 	if(add){
 		states.push_back(state);
 		currentStateIndex = states.size()-1;
 	}
 
-	if(lastStateIndex != -1){
+	//If there was a state before the current one (not the first); TODO Can be optimized, saves one if per loop
+	if(lastActions.size() != 0){
 
 		float lastValue;
 
-		if(states[lastStateIndex].values.find(lastAction) == states[lastStateIndex].values.end()){
-			states[lastStateIndex].setValue(lastAction, Action::DEFAULT_REWARD);
-		}
+		/*
+		 * Maybe(most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
+		 * A series of actions and event have lead to this specific situation, so we need to apply the reward received for the last action
+		 * to the last state in general, in other words to every possible action
+		 *
+		 * Example:
+		 * State 0:		Action: EnableFlipperLeft		Reward:	0.0f	Cause: Ball leaves the CF in the direction of a pin
+		 * State 10:	Action: DisableFlipperRight		Reward: 0.0f	Cause: Nothing, ball is still travelling in the direction of the pin
+		 * State 15:	Action: DisableFlipperRight		Reward: 1.0f	Cause: Nothing BUT the ball kicked in state 0 hits the pin and causes a reward of 1.0f
+		 *
+		 * Now we want to series of actions taken from the last few states to occur more often because we know it was "good"
+		 * We now want to apply the reward received in state 15 to the actions taken in the last few steps
+		 */
 
-		lastValue = states[lastStateIndex].getValue(lastAction);
+		for(int i=(lastActions.size() - 1);i>-1;i--){
 
-		for(int i=0;i<collectedRewards.size();i++){
-			if(collectedRewards[i] != Action::DEFAULT_REWARD){//ignore default values
-				states[lastStateIndex].setValue(lastAction, lastValue + VALUE_ADJUST_FRACTION * (collectedRewards[i] - lastValue));
-				//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
+			//If there isn't already a value set for the action taken in the last state, then set it to the default reward
+			if(states[lastActions[i].first].values.find(lastActions[i].second) == states[lastActions[i].first].values.end()){
+				states[lastActions[i].first].setValue(lastActions[i].second, Action::DEFAULT_REWARD);
 			}
-		}
 
-		if(currentStateIndex != -1){
+			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
 
-			float currentLastValue;
+			//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
+			for(int j=0;j<collectedRewards.size();j++){
 
-			for(int i=0;i<availableActions.size();i++){
-				if(states[currentStateIndex].values.find(availableActions[i]) != states[currentStateIndex].values.end()){
+				//ignore default values
+				if(collectedRewards[j] != Action::DEFAULT_REWARD){
 
-					currentLastValue = states[lastStateIndex].getValue(availableActions[i]);
-					states[lastStateIndex].setValue(availableActions[i], currentLastValue + VALUE_ADJUST_FRACTION * (states[currentStateIndex].getValue(availableActions[i]) - currentLastValue));
+					/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
+					 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
+					 */
+					lastValue = lastValue + VALUE_ADJUST_FRACTION * (collectedRewards[j] - lastValue);
+					states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
+
+					//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
 				}
-			}
 
+			}
 		}
 
 		/*if(states[lastStateIndex].getValue(lastAction) != Action::DEFAULT_REWARD){
@@ -99,8 +111,13 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	//and the JUST DO IT
 	actionToTake->run();
 
-	lastStateIndex	= currentStateIndex;
-	lastAction		= actionToTake;
+	lastActions.push_back(std::make_pair(currentStateIndex, actionToTake));
+
+	if(lastActions.size() > STATES_TO_BACKPORT){
+		for(int i=0;i<(lastActions.size() - STATES_TO_BACKPORT);i++){
+			lastActions.pop_front();
+		}
+	}
 }
 
 unsigned Agent::seed(){
@@ -225,7 +242,6 @@ void Agent::loadPolicyFromFile(){
 	if(std::getline(policies, header)){
 		while (std::getline(policies, line)){
 
-			State	state;
 			b2Vec2	ballPosition;
 			b2Vec2	ballVelocity;
 
@@ -233,11 +249,11 @@ void Agent::loadPolicyFromFile(){
 
 			ballPosition.x		= stof(partials[0]);
 			ballPosition.y		= stof(partials[1]);
-			state.ballPosition	= ballPosition;
 
 			ballVelocity.x		= stof(partials[2]);
 			ballVelocity.y		= stof(partials[3]);
-			state.ballVelocity	= ballVelocity;
+
+			State state(ballPosition, ballVelocity);
 
 			for(int i=0; i<availableActions.size(); i++){ //TODO check if the order in the header is the same as in available actions
 				state.values[availableActions[i]] = stof(partials[4 + i]);
@@ -262,8 +278,4 @@ std::vector<std::string> Agent::split(const std::string &s, char delim, std::vec
 		elems.push_back(item);
 	}
 	return elems;
-}
-
-bool Agent::areEqualEpsilon(float a, float b){
-	return fabs(a - b) < FLOAT_COMPARE_EPSILON;
 }
