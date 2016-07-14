@@ -165,7 +165,11 @@ void PinballBot::runSimulation(){
 		if(!pause){
 
 			sim.step(TIME_STEP);
-			rewardsCollected.push_back(sim.reward);
+
+			//Ignore default rewards
+			if(sim.reward != Action::DEFAULT_REWARD){
+				rewardsCollected.push_back(sim.reward);
+			}
 
 			if(sim.reward == 0.0f){
 				gameOvers++;

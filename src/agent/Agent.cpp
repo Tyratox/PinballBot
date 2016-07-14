@@ -18,9 +18,9 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const int	Agent::STATES_TO_BACKPORT		= 30;
+const int	Agent::STATES_TO_BACKPORT		= 50;
 
-const float Agent::VALUE_ADJUST_FRACTION	= 0.25f;
+const float Agent::VALUE_ADJUST_FRACTION	= 0.35f;
 const float Agent::EPSILON					= 0.15f;
 
 Agent::Agent(std::vector<Action*> availableActions):
@@ -30,17 +30,14 @@ Agent::Agent(std::vector<Action*> availableActions):
 }
 
 void Agent::think(State state, std::vector<float> collectedRewards){
-	//first adjust the value for the taken action
 
-	bool 	add					= true;
 	int		currentStateIndex	= 0;
 
+	//first check whether this state already occured or not
 	for(int i=0;i<states.size();i++){
 
-		//check if it is the same state
 		if(states[i] == state){
-			//printf("(%s | %s) || (%s | %s)\n", states[i].ballPosition.x, states[i].ballPosition.y, state.ballPosition.x, state.ballPosition.y);
-			add = false;
+			//Yes it did, index = i
 			currentStateIndex = i;
 
 			break;
@@ -48,7 +45,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	}
 
 	//If its a new state, add it
-	if(add){
+	if(currentStateIndex == 0){
 		states.push_back(state);
 		currentStateIndex = states.size()-1;
 	}
@@ -56,10 +53,10 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	//If there was a state before the current one (not the first); TODO Can be optimized, saves one if per loop
 	if(lastActions.size() != 0){
 
-		float lastValue;
+		float lastValue, factor;
 
 		/*
-		 * Maybe(most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
+		 * Maybe (actually most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
 		 * A series of actions and event have lead to this specific situation, so we need to apply the reward received for the last action
 		 * to the last state in general, in other words to every possible action
 		 *
@@ -74,34 +71,46 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 		for(int i=(lastActions.size() - 1);i>-1;i--){
 
+			factor = ((float)i) / (lastActions.size() - 1);
+
 			//If there isn't already a value set for the action taken in the last state, then set it to the default reward
 			if(states[lastActions[i].first].values.find(lastActions[i].second) == states[lastActions[i].first].values.end()){
 				states[lastActions[i].first].setValue(lastActions[i].second, Action::DEFAULT_REWARD);
-			}
 
-			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+				lastValue = Action::DEFAULT_REWARD;
+			}else{
+				lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+			}
 
 			//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
 			for(int j=0;j<collectedRewards.size();j++){
 
-				//ignore default values
-				if(collectedRewards[j] != Action::DEFAULT_REWARD){
+				/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
+				 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
+				 */
+				lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue);
+				states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
-					/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
-					 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
-					 */
-					lastValue = lastValue + VALUE_ADJUST_FRACTION * (collectedRewards[j] - lastValue);
-					states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
-
-					//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
-				}
+				//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
 
 			}
-		}
 
-		/*if(states[lastStateIndex].getValue(lastAction) != Action::DEFAULT_REWARD){
-			printf("SET NEW VALUE FOR ACTION: %s for STATE %d, new value: %f\n", lastAction->getUID(), lastStateIndex, states[lastStateIndex].getValue(lastAction));
-		}*/
+			//TODO: can be optimized
+			if(collectedRewards.size() == 0){
+				/*
+				 * If there was no reward we want to port the average value of the current state back
+				 * in order to ensure it will occur more or less often. To do that, we simply converge all
+				 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
+				 */
+
+				lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue);
+				states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
+
+			}
+
+
+
+		}
 
 	}
 

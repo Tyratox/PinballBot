@@ -54,6 +54,13 @@ class State{
 		float getValue(Action *action);
 
 		/**
+		 * Gets the average value
+		 * @return			float	The expected reward
+		 */
+
+		float getAverageValue();
+
+		/**
 		 * Sets the expected reward if a specific action is taken
 		 * @param	action	*Action	The action of which the expected reward is set
 		 * @param	value	float	The expected reward

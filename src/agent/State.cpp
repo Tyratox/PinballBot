@@ -35,6 +35,16 @@ float State::getValue(Action *action){
 	return values[action];
 }
 
+float State::getAverageValue(){
+	float average = 0;
+
+	for(auto const &iter : values){
+		average += iter.second;
+	}
+
+	return (average / values.size());
+}
+
 void State::setValue(Action *action, float value){
 	values[action] = value;
 }
