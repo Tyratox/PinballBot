@@ -36,8 +36,9 @@ const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
 const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
 
-const unsigned long long		PinballBot::SAVE_INTERVAL				= 100000;
-const unsigned long long		PinballBot::LOG_INTERVAL				= 10000;
+const unsigned long long		PinballBot::SAVE_INTERVAL				= 500000;
+const unsigned long long		PinballBot::STATS_INTERVAL				= 100000;
+const unsigned long long		PinballBot::LOG_INTERVAL				= 50000;
 const unsigned long long		PinballBot::OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
 
 const std::string				PinballBot::STATS_FILE					= "stats.csv";
@@ -121,13 +122,11 @@ void PinballBot::handleKeys(Simulation &sim, SDL_Event &e){
 	}
 }
 
-void PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
+bool PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
 	if(sim.isPlayingBallInsideCaptureFrame()){
-		rlAgent->think(sim.getCurrentState(), rewardsCollected);
-		statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
-		rewardsCollected.clear();
 
 		stepStartedBeingOutsideCF = 0;
+		return true;
 	}else{
 		if(stepStartedBeingOutsideCF == 0){
 			//when does the ball leave the CF
@@ -142,6 +141,8 @@ void PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
 				stepStartedBeingOutsideCF = 0;
 			}
 		}
+
+		return false;
 	}
 }
 
@@ -149,7 +150,10 @@ void PinballBot::runSimulation(){
 
 	Simulation 										sim;
 	SDL_Event										e;
-	Agent											agent(ActionsSim::actionsAvailable(sim));
+
+	std::vector<Action*> availableActions			= ActionsSim::actionsAvailable(sim);
+
+	Agent											agent(availableActions);
 	rlAgent											= &agent;
 
 	if(RENDER){
@@ -175,7 +179,11 @@ void PinballBot::runSimulation(){
 				gameOvers++;
 			}
 
-			preventStablePositionsOutsideCF(sim);
+			if(preventStablePositionsOutsideCF(sim)){
+				rlAgent->think(sim.getCurrentState(availableActions), rewardsCollected);
+				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
+				rewardsCollected.clear();
+			}
 
 			if(RENDER){
 				renderer->render();
@@ -187,21 +195,24 @@ void PinballBot::runSimulation(){
 		}
 
 		if(steps != 0){
-			if(steps % LOG_INTERVAL == 0){
+			if(steps % LOG_INTERVAL  == 0){
 				printf("step #%lld | amount of states: %ld\n", steps, rlAgent->states.size());
 
-				if(steps % SAVE_INTERVAL == 0){
-					rlAgent->savePoliciesToFile();
-
+				if(steps % STATS_INTERVAL == 0){
 					statsLogger.log(STATS_FILE);
 
 					statsRewardsCollected = 0;
 					gameOvers = 0;
+
+					if(steps % SAVE_INTERVAL == 0){
+						rlAgent->savePoliciesToFile();
+					}
 				}
 
 			}
 		}
 		steps++;
+
 	}
 }
 

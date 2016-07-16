@@ -8,6 +8,7 @@
 #define AGENT_AGENT_H_
 
 #include <vector>
+#include <list>
 #include <deque>
 #include <iostream>
 

@@ -40,6 +40,7 @@ class PinballBot{
 		static const float					TICK_INTERVAL;
 
 		static const unsigned long long		SAVE_INTERVAL;
+		static const unsigned long long		STATS_INTERVAL;
 		static const unsigned long long		LOG_INTERVAL;
 		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
 
@@ -96,10 +97,10 @@ class PinballBot{
 		/**
 		 * Checks whether the ball is in- or outside the capture frame and if so for how long.
 		 * If it stayed there longer than OUTSIDE_CF_UNTIL_RESPAWN, respawn the ball
-		 * @return		void
+		 * @return		bool	Whether the ball is inside the CF
 		 */
 
-		void preventStablePositionsOutsideCF(Simulation &sim);
+		bool preventStablePositionsOutsideCF(Simulation &sim);
 
 		/**
 		 * Runs the simulation

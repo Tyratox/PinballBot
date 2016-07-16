@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 #include <Box2D/Box2D.h>
 
@@ -27,89 +28,75 @@ const float Agent::EPSILON					= 0.15f;
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
 
+	//states.reserve(std::pow(9, 9));//reserves ≈ 400 MB RAM and prevents reallocations
+
 	loadPolicyFromFile();
 }
 
 void Agent::think(State state, std::vector<float> collectedRewards){
 
 	int		currentStateIndex	= 0;
+	float	lastValue, factor;
 
 	//first check whether this state already occured or not and retrieve the iterator
-	std::vector<State>::iterator low = std::lower_bound(states.begin(), states.end(), state);
+	std::vector<State>::iterator it = std::lower_bound(states.begin(), states.end(), state);
+	currentStateIndex = (it - states.begin());
 
-	if(low == states.end()){
-		//If its a new state, add it
-		states.push_back(state);
-		currentStateIndex = states.size()-1;
+	if(currentStateIndex >= states.size() || states[currentStateIndex] != state){
+		//If its a new state, add it at the *right* position to prevent another sort
+		it = states.insert(it, state);
 
-		//and now sort it in order to be able to use binary search
-		std::sort(states.begin(), states.end());
-
-	}else{
-		currentStateIndex = (low - states.begin());
+		//As we inserted an element we need to increase the index of all after the new one
+		for(int i=0;i<lastActions.size();i++){
+			if(lastActions[i].first >= currentStateIndex){
+				lastActions[i].first++;
+			}
+		}
 	}
 
-	//If there was a state before the current one (not the first); TODO Can be optimized, saves one if per loop
-	if(lastActions.size() != 0){
+	/*
+	 * Maybe (actually most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
+	 * A series of actions and event have lead to this specific situation, so we need to apply the reward received for the last action
+	 * to the last state in general, in other words to every possible action
+	 *
+	 * Example:
+	 * State 0:		Action: EnableFlipperLeft		Reward:	0.0f	Cause: Ball leaves the CF in the direction of a pin
+	 * State 10:	Action: DisableFlipperRight		Reward: 0.0f	Cause: Nothing, ball is still travelling in the direction of the pin
+	 * State 15:	Action: DisableFlipperRight		Reward: 1.0f	Cause: Nothing BUT the ball kicked in state 0 hits the pin and causes a reward of 1.0f
+	 *
+	 * Now we want to series of actions taken from the last few states to occur more often because we know it was "good"
+	 * We now want to apply the reward received in state 15 to the actions taken in the last few steps
+	 */
 
-		float lastValue, factor;
+	for(int i=0;i<lastActions.size();i++){
 
-		/*
-		 * Maybe (actually most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
-		 * A series of actions and event have lead to this specific situation, so we need to apply the reward received for the last action
-		 * to the last state in general, in other words to every possible action
-		 *
-		 * Example:
-		 * State 0:		Action: EnableFlipperLeft		Reward:	0.0f	Cause: Ball leaves the CF in the direction of a pin
-		 * State 10:	Action: DisableFlipperRight		Reward: 0.0f	Cause: Nothing, ball is still travelling in the direction of the pin
-		 * State 15:	Action: DisableFlipperRight		Reward: 1.0f	Cause: Nothing BUT the ball kicked in state 0 hits the pin and causes a reward of 1.0f
-		 *
-		 * Now we want to series of actions taken from the last few states to occur more often because we know it was "good"
-		 * We now want to apply the reward received in state 15 to the actions taken in the last few steps
-		 */
-
-		for(int i=(lastActions.size() - 1);i>-1;i--){
-
-			factor = ((float)i) / (lastActions.size() - 1);
-
-			//If there isn't already a value set for the action taken in the last state, then set it to the default reward
-			if(states[lastActions[i].first].values.find(lastActions[i].second) == states[lastActions[i].first].values.end()){
-				states[lastActions[i].first].setValue(lastActions[i].second, Action::DEFAULT_REWARD);
-
-				lastValue = Action::DEFAULT_REWARD;
-			}else{
-				lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
-			}
-
-			//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
-			for(int j=0;j<collectedRewards.size();j++){
-
-				/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
-				 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
-				 */
-				lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue);
-				states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
-
-				//printf("GOT NEW REWARD FOR ACTION: %s for STATE %d, old value: %f, new value: %f\n", lastAction->getUID(), lastStateIndex, lastValue, states[lastStateIndex].getValue(lastAction));
-
-			}
-
-			//TODO: can be optimized
-			if(collectedRewards.size() == 0){
-				/*
-				 * If there was no reward we want to port the average value of the current state back
-				 * in order to ensure it will occur more or less often. To do that, we simply converge all
-				 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
-				 */
-
-				lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue);
-				states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
-
-			}
-
-
-
+		if(lastActions.size() == 1){
+			factor = 1; //prevents division by 0
+		}else{
+			factor = ((float)i) / (lastActions.size() - 1); //the last one is the most "important" one
 		}
+
+		lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+
+		//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
+		for(int j=0;j<collectedRewards.size();j++){
+
+			/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
+			 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
+			 */
+			lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue);
+		}
+
+		//TODO: can be optimized
+		if(collectedRewards.size() == 0){
+			/*
+			 * If there was no reward we want to port the average value of the current state back
+			 * in order to ensure it will occur more or less often. To do that, we simply converge all
+			 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
+			 */
+			lastValue = lastValue + ((factor * VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue));
+		}
+		states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
 	}
 

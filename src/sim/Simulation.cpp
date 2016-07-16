@@ -500,6 +500,6 @@ bool Simulation::isPlayingBallInsideCaptureFrame(){
 	return (pos.x > FIELD_CAPTURE_X_MIN && pos.x < FIELD_CAPTURE_X_MAX) && (pos.y > FIELD_CAPTURE_Y_MIN && pos.y < FIELD_CAPTURE_Y_MAX);
 }
 
-State Simulation::getCurrentState(){
-	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity());
+State Simulation::getCurrentState(std::vector<Action*> availableActions){
+	return State(this->ballBody->GetPosition(), this->ballBody->GetLinearVelocity(), availableActions);
 }

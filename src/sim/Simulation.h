@@ -232,13 +232,16 @@ class Simulation{
 
 		/**
 		 * Returns if the playing ball is inside the capture frame
+		 * @return bool
 		 */
 		bool isPlayingBallInsideCaptureFrame();
 
 		/**
 		 * Returns the current state
+		 * @param availableActions	std::vector<Action*> The actions for which the deault reward should be set
+		 * @return State
 		 */
-		State getCurrentState();
+		State getCurrentState(std::vector<Action*> availableActions = std::vector<Action*>(0));
 
 };
 

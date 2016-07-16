@@ -39,7 +39,7 @@ class State{
 		 * @param	ballPosition		b2Vec2					The ball position
 		 * @param	ballVelocity		b2Vec2					The ball velocity
 		 */
-		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0));
+		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0), std::vector<Action*> availableActions = std::vector<Action*>(0));
 
 		/**
 		 * Gets the expected reward if a specific action is taken
@@ -71,6 +71,12 @@ class State{
 		 * @return					char*
 		 */
 		char* round(float32 f);
+
+		/**
+		 * Prints some debugging values
+		 * @return		void
+		 */
+		void debug();
 };
 
 bool operator ==	(const State::Coords & lhs, const State::Coords & rhs);
