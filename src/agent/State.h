@@ -19,16 +19,12 @@
 
 class State{
 
-	private:
+	public:
 		class Coords{
 			public:
 				char x[8], y[8];
 
 				Coords(const char* x = "0", const char* y = "0");
-
-				bool operator==(const Coords& cmp){
-					return strcmp(x, cmp.x) == 0 && strcmp(y, cmp.y) == 0;
-				}
 			};
 
 	public:
@@ -75,12 +71,17 @@ class State{
 		 * @return					char*
 		 */
 		char* round(float32 f);
-
-
-		bool operator==(const State& cmp){
-			return ballPosition == cmp.ballPosition && ballVelocity == cmp.ballVelocity;
-		}
 };
+
+bool operator ==	(const State::Coords & lhs, const State::Coords & rhs);
+bool operator !=	(const State::Coords & lhs, const State::Coords & rhs);
+
+bool operator ==	(const State & lhs, const State & rhs);
+bool operator !=	(const State & lhs, const State & rhs);
+bool operator <		(const State & lhs, const State & rhs);
+bool operator <=	(const State & lhs, const State & rhs);
+bool operator >		(const State & lhs, const State & rhs);
+bool operator >=	(const State & lhs, const State & rhs);
 
 
 

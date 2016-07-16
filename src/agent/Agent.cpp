@@ -11,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include <Box2D/Box2D.h>
 
@@ -33,21 +34,15 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 	int		currentStateIndex	= 0;
 
-	//first check whether this state already occured or not
-	for(int i=0;i<states.size();i++){
+	//first check whether this state already occured or not and retrieve the iterator
+	std::vector<State>::iterator low = std::lower_bound(states.begin(), states.end(), state);
 
-		if(states[i] == state){
-			//Yes it did, index = i
-			currentStateIndex = i;
-
-			break;
-		}
-	}
-
-	//If its a new state, add it
-	if(currentStateIndex == 0){
+	if(low == states.end()){
+		//If its a new state, add it
 		states.push_back(state);
 		currentStateIndex = states.size()-1;
+	}else{
+		currentStateIndex = (low - states.begin());
 	}
 
 	//If there was a state before the current one (not the first); TODO Can be optimized, saves one if per loop
@@ -127,6 +122,9 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 			lastActions.pop_front();
 		}
 	}
+
+	//and now sort it in order to be able to use binary search
+	//std::sort(states.begin(), states.end());
 }
 
 unsigned Agent::seed(){

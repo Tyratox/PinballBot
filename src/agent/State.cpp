@@ -48,3 +48,64 @@ float State::getAverageValue(){
 void State::setValue(Action *action, float value){
 	values[action] = value;
 }
+
+
+bool operator==(const State::Coords& lhs, const State::Coords& rhs){
+	return strcmp(lhs.x, rhs.x) == 0 && strcmp(lhs.y, rhs.y) == 0;
+}
+bool operator!=(const State::Coords& lhs, const State::Coords& rhs){
+	return strcmp(lhs.x, rhs.x) != 0 || strcmp(lhs.y, rhs.y) != 0;
+}
+
+
+bool operator==(const State& lhs, const State& rhs){
+	return lhs.ballPosition == rhs.ballPosition && lhs.ballVelocity == rhs.ballVelocity;
+}
+
+bool operator!=(const State& lhs, const State& rhs){
+	return !(lhs == rhs);
+}
+
+bool operator>(const State& lhs, const State& rhs){
+	if(lhs.ballPosition.x != rhs.ballPosition.x){
+		return lhs.ballPosition.x > rhs.ballPosition.x;
+
+	}else if(lhs.ballPosition.y != rhs.ballPosition.y){
+		return lhs.ballPosition.y > rhs.ballPosition.y;
+
+	}else if(lhs.ballVelocity.x != rhs.ballVelocity.x){
+		return lhs.ballVelocity.x > rhs.ballVelocity.x;
+
+	}else if(lhs.ballVelocity.y != rhs.ballVelocity.y){
+		return lhs.ballVelocity.y > rhs.ballVelocity.y;
+
+	}else{
+		return false;
+	}
+}
+
+bool operator<(const State& lhs, const State& rhs){
+	if(lhs.ballPosition.x != rhs.ballPosition.x){
+		return lhs.ballPosition.x < rhs.ballPosition.x;
+
+	}else if(lhs.ballPosition.y != rhs.ballPosition.y){
+		return lhs.ballPosition.y < rhs.ballPosition.y;
+
+	}else if(lhs.ballVelocity.x != rhs.ballVelocity.x){
+		return lhs.ballVelocity.x < rhs.ballVelocity.x;
+
+	}else if(lhs.ballVelocity.y != rhs.ballVelocity.y){
+		return lhs.ballVelocity.y < rhs.ballVelocity.y;
+
+	}else{
+		return false;
+	}
+}
+
+bool operator<=(const State& lhs, const State& rhs){
+	return !(lhs > rhs);
+}
+
+bool operator>=(const State& lhs, const State& rhs){
+	return !(lhs < rhs);
+}
