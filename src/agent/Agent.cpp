@@ -41,6 +41,10 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 		//If its a new state, add it
 		states.push_back(state);
 		currentStateIndex = states.size()-1;
+
+		//and now sort it in order to be able to use binary search
+		std::sort(states.begin(), states.end());
+
 	}else{
 		currentStateIndex = (low - states.begin());
 	}
@@ -122,9 +126,6 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 			lastActions.pop_front();
 		}
 	}
-
-	//and now sort it in order to be able to use binary search
-	//std::sort(states.begin(), states.end());
 }
 
 unsigned Agent::seed(){
