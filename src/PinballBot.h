@@ -45,6 +45,7 @@ class PinballBot{
 		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
 
 		static const std::string			STATS_FILE;
+		static const std::string			POLICIES_FILE;
 
 	private:
 

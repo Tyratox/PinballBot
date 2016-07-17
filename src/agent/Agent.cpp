@@ -17,6 +17,8 @@
 #include <Box2D/Box2D.h>
 
 #include "Agent.h"
+
+#include "../PinballBot.h"
 #include "State.h"
 #include "../action/Action.h"
 
@@ -36,7 +38,7 @@ Agent::Agent(std::vector<Action*> availableActions):
 void Agent::think(State state, std::vector<float> collectedRewards){
 
 	int		currentStateIndex	= 0;
-	float	lastValue, factor;
+	float	lastValue;
 
 	//first check whether this state already occured or not and retrieve the iterator
 	std::vector<State>::iterator it = std::lower_bound(states.begin(), states.end(), state);
@@ -70,12 +72,6 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 	for(int i=0;i<lastActions.size();i++){
 
-		if(lastActions.size() == 1){
-			factor = 1; //prevents division by 0
-		}else{
-			factor = ((float)i) / (lastActions.size() - 1); //the last one is the most "important" one
-		}
-
 		lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
 
 		//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
@@ -84,7 +80,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 			/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
 			 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
 			 */
-			lastValue = lastValue + (factor * VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue);
+			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
 		}
 
 		//TODO: can be optimized
@@ -94,7 +90,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 			 * in order to ensure it will occur more or less often. To do that, we simply converge all
 			 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
 			 */
-			lastValue = lastValue + ((factor * VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue));
+			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue));
 		}
 		states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
@@ -149,6 +145,7 @@ int Agent::randomIntInRange(const int &min, const int &max){
 }*/
 
 Action* Agent::epsilonGreedy(State state, const float &epsilon){
+
 	if(epsilon < randomFloatInRange(0.0f, 1.0f)){
 		//pick a greedy state
 		return greedy(state);
@@ -192,7 +189,7 @@ void Agent::savePoliciesToFile(){
 	if(states.size() != 0){
 
 		std::ofstream policies;
-		policies.open("policies.csv");
+		policies.open(PinballBot::POLICIES_FILE);
 
 		//Generate header
 		policies << "POSITION_X;POSITION_Y;VELOCITY_X;VELOCITY_Y";
@@ -230,9 +227,9 @@ void Agent::loadPolicyFromFile(){
 
 	states.clear();
 
-	printf("Reading and parsing policies.csv....\n");
+	printf("Reading and parsing %s....\n", PinballBot::POLICIES_FILE.c_str());
 
-	policies.open("policies.csv");
+	policies.open(PinballBot::POLICIES_FILE);
 
 	if(std::getline(policies, header)){
 		while (std::getline(policies, line)){
@@ -261,7 +258,7 @@ void Agent::loadPolicyFromFile(){
 		}
 	}
 
-	printf("Read and parsed policies.csv, %lu states were imported.\n", states.size());
+	printf("Read and parsed %s, %lu states were imported.\n", PinballBot::POLICIES_FILE.c_str(), states.size());
 
 	return;
 }
