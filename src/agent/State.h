@@ -34,6 +34,9 @@ class State{
 		Coords							ballPosition;
 		Coords							ballVelocity;
 
+		b2Vec2							ballPosition_f;
+		b2Vec2							ballVelocity_f;
+
 		/**
 		 * Inits a state
 		 * @param	ballPosition		b2Vec2					The ball position

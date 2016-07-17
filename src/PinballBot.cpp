@@ -36,7 +36,7 @@ const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
 const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
 
-const unsigned long long		PinballBot::SAVE_INTERVAL				= 500000;
+const unsigned long long		PinballBot::SAVE_INTERVAL				= 200000;
 const unsigned long long		PinballBot::STATS_INTERVAL				= 100000;
 const unsigned long long		PinballBot::LOG_INTERVAL				= 50000;
 const unsigned long long		PinballBot::OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
@@ -212,7 +212,6 @@ void PinballBot::runSimulation(){
 			}
 		}
 		steps++;
-
 	}
 }
 
