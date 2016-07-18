@@ -22,10 +22,18 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const int	Agent::STATES_TO_BACKPORT		= 50;
+const int Agent::STATES_TO_BACKPORT						= 50;
 
-const float Agent::VALUE_ADJUST_FRACTION	= 0.35f;
-const float Agent::EPSILON					= 0.15f;
+const float Agent::VALUE_ADJUST_FRACTION				= 0.35f;
+const float Agent::EPSILON								= 0.15f;
+
+const std::string Agent::POLICIES_HEADER_POSITION_X		= "POSITION_X";
+const std::string Agent::POLICIES_HEADER_POSITION_Y		= "POSITION_Y";
+const std::string Agent::POLICIES_HEADER_VELOCITY_X		= "VELOCITY_X";
+const std::string Agent::POLICIES_HEADER_VELOCITY_Y		= "VELOCITY_Y";
+
+const int Agent::POLICIES_HEADER_ACTIONS_OFFSET			= 4;
+const std::string Agent::POLICIES_HEADER_ACTION_PREFIX = "ACTION_";
 
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
@@ -201,9 +209,9 @@ void Agent::savePoliciesToFile(){
 		policies.open(PinballBot::POLICIES_FILE);
 
 		//Generate header
-		policies << "POSITION_X;POSITION_Y;VELOCITY_X;VELOCITY_Y";
+		policies << POLICIES_HEADER_POSITION_X << ";" << POLICIES_HEADER_POSITION_Y << ";" << POLICIES_HEADER_VELOCITY_X << ";" << POLICIES_HEADER_VELOCITY_Y;
 		for(int i=0;i<availableActions.size();i++){
-			policies << ";ACTION_" << availableActions[i]->getUID();
+			policies << ";" << POLICIES_HEADER_ACTION_PREFIX << availableActions[i]->getUID();
 		}
 		policies << std::endl;
 
@@ -232,7 +240,7 @@ void Agent::savePoliciesToFile(){
 void Agent::loadPolicyFromFile(){
 	std::string					line, header;
 	std::ifstream				policies;
-	std::vector<std::string>	partials;
+	std::vector<std::string>	partials, headerPartials;
 
 	states.clear();
 
@@ -241,27 +249,55 @@ void Agent::loadPolicyFromFile(){
 	policies.open(PinballBot::POLICIES_FILE);
 
 	if(std::getline(policies, header)){
+
+		split(header, ';', headerPartials);
+
 		while (std::getline(policies, line)){
 
 			b2Vec2	ballPosition;
 			b2Vec2	ballVelocity;
+			bool	posX = false, posY = false, velX = false, velY = false, stateInit = false;
+			State	state;
 
 			split(line, ';', partials);
-
-			ballPosition.x		= stof(partials[0]);
-			ballPosition.y		= stof(partials[1]);
-
-			ballVelocity.x		= stof(partials[2]);
-			ballVelocity.y		= stof(partials[3]);
-
-			State state(ballPosition, ballVelocity);
-
-			for(int i=0; i<availableActions.size(); i++){ //TODO check if the order in the header is the same as in available actions
-				state.values[availableActions[i]] = stof(partials[4 + i]);
+			if(partials.size() != headerPartials.size()){
+				printf("ERROR: Line %lu of %s doesn't have the same amount of columns as the header!\n", (states.size() + 1), PinballBot::POLICIES_FILE.c_str());
+				break;
 			}
 
-			// push new state to states
-			states.push_back(state);
+			for(int i=0;i<partials.size();i++){
+
+				//init state with values as soon as all the necessary values are loaded
+				if((posX && posY && velX && velY) && !stateInit){
+					state				= State(ballPosition, ballVelocity, availableActions);
+					stateInit			= true;
+				}
+
+				if(headerPartials[i] == POLICIES_HEADER_POSITION_X){
+					ballPosition.x		= stof(partials[i]);
+					posX				= true;
+				}else if(headerPartials[i] == POLICIES_HEADER_POSITION_Y){
+					ballPosition.y		= stof(partials[i]);
+					posY				= true;
+				}else if(headerPartials[i] == POLICIES_HEADER_VELOCITY_X){
+					ballVelocity.x		= stof(partials[i]);
+					velX				= true;
+				}else if(headerPartials[i] == POLICIES_HEADER_VELOCITY_Y){
+					ballVelocity.y		= stof(partials[i]);
+					velY				= true;
+				}else if(stateInit){
+					for(int j=0; j<availableActions.size(); j++){
+						if(headerPartials[i] == (POLICIES_HEADER_ACTION_PREFIX + std::string(availableActions[j]->getUID()))){
+							state.values[availableActions[j]] = stof(partials[POLICIES_HEADER_ACTIONS_OFFSET + j]);
+						}
+					}
+				}
+			}
+
+			// push new state to states if all values are loaded
+			if(posX && posY && velX && velY && stateInit){
+				states.push_back(state);
+			}
 
 			partials.clear();
 		}

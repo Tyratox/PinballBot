@@ -8,7 +8,7 @@
 #define AGENT_AGENT_H_
 
 #include <vector>
-#include <list>
+#include <string>
 #include <deque>
 #include <iostream>
 
@@ -24,6 +24,14 @@ class Agent{
 
 		static const float					VALUE_ADJUST_FRACTION;
 		static const float					EPSILON;
+
+		static const std::string			POLICIES_HEADER_POSITION_X;
+		static const std::string			POLICIES_HEADER_POSITION_Y;
+		static const std::string			POLICIES_HEADER_VELOCITY_X;
+		static const std::string			POLICIES_HEADER_VELOCITY_Y;
+
+		static const int					POLICIES_HEADER_ACTIONS_OFFSET;
+		static const std::string			POLICIES_HEADER_ACTION_PREFIX;
 
 	private:
 
