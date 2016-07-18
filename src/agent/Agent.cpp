@@ -30,7 +30,7 @@ const float Agent::EPSILON					= 0.15f;
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
 
-	states.reserve(std::pow(9, 9));//reserves ≈ 400 MB RAM and prevents reallocations
+	//states.reserve(std::pow(2, 20));//reserves a lot a space, enough space for 2^20 = 1'048'576 elements
 
 	loadPolicyFromFile();
 }
