@@ -45,7 +45,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	currentStateIndex = (it - states.begin());
 
 	if(currentStateIndex >= states.size() || states[currentStateIndex] != state){
-		//If its a new state, add it at the *right* position to prevent another sort
+		//If its a new state, add it at the *right* position to prevent a sort
 		it = states.insert(it, state);
 
 		//As we inserted an element we need to increase the index of all after the new one
@@ -70,30 +70,39 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	 * We now want to apply the reward received in state 15 to the actions taken in the last few steps
 	 */
 
-	for(int i=0;i<lastActions.size();i++){
+	//"strange" syntax because it should be more efficent this way
+	if(collectedRewards.size() == 0){
 
-		lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+		for(int i=0;i<lastActions.size();i++){
 
-		//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
-		for(int j=0;j<collectedRewards.size();j++){
-
-			/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
-			 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
-			 */
-			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
-		}
-
-		//TODO: can be optimized
-		if(collectedRewards.size() == 0){
+			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
 			/*
 			 * If there was no reward we want to port the average value of the current state back
 			 * in order to ensure it will occur more or less often. To do that, we simply converge all
 			 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
 			 */
 			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue));
-		}
-		states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
+			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
+		}
+	}else{
+
+		for(int i=0;i<lastActions.size();i++){
+
+			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+
+			//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
+			for(int j=0;j<collectedRewards.size();j++){
+
+				/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
+				 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
+				 */
+				lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
+			}
+
+			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
+
+		}
 	}
 
 	//then decide what action to take next
