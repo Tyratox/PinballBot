@@ -229,7 +229,8 @@ std::string PinballBot::logSteps(){
 }
 
 std::string PinballBot::logTime(){
-	return std::to_string(std::time(nullptr));
+	timeLastLog = std::time(nullptr);
+	return std::to_string(timeLastLog);
 }
 
 std::string PinballBot::logAmountOfStates(){
