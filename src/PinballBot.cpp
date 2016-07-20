@@ -229,8 +229,7 @@ std::string PinballBot::logSteps(){
 }
 
 std::string PinballBot::logTime(){
-	timeLastLog = std::time(nullptr);
-	return std::to_string(timeLastLog);
+	return std::to_string(std::time(nullptr));
 }
 
 std::string PinballBot::logAmountOfStates(){
@@ -238,7 +237,10 @@ std::string PinballBot::logAmountOfStates(){
 }
 
 std::string PinballBot::logAverageTimePerLoop(){
-	return std::to_string(( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ));
+	std::string r	= std::to_string(( ((double)(std::time(nullptr) - timeLastLog)) / ( (double)SAVE_INTERVAL) ));
+	timeLastLog		= std::time(nullptr);
+
+	return r;
 }
 
 std::string PinballBot::logRewardsCollected(){
