@@ -69,11 +69,18 @@ class State{
 		void setValue(Action *action, float value);
 
 		/**
-		 * Rounds a float to a char
+		 * Rounds a float to a char (with "position precision")
 		 * @param	f				float32	The floating point number to round
 		 * @return					char*
 		 */
-		char* round(float32 f);
+		char* roundPos(float32 f);
+
+		/**
+		 * Rounds a float to a char (with "velocity precision")
+		 * @param	f				float32	The floating point number to round
+		 * @return					char*
+		 */
+		char* roundVel(float32 f);
 
 		/**
 		 * Prints some debugging values

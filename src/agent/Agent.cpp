@@ -22,10 +22,10 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const int Agent::STATES_TO_BACKPORT						= 50;
+const int Agent::STATES_TO_BACKPORT						= 35;
 
-const float Agent::VALUE_ADJUST_FRACTION				= 0.35f;
-const float Agent::EPSILON								= 0.15f;
+const float Agent::VALUE_ADJUST_FRACTION				= 0.4f;
+const float Agent::EPSILON								= 0.2f;
 
 const std::string Agent::POLICIES_HEADER_POSITION_X		= "POSITION_X";
 const std::string Agent::POLICIES_HEADER_POSITION_Y		= "POSITION_Y";
@@ -38,6 +38,7 @@ const std::string Agent::POLICIES_HEADER_ACTION_PREFIX = "ACTION_";
 Agent::Agent(std::vector<Action*> availableActions):
 	availableActions(availableActions), generator(seed()){
 
+	//causes an std::bad_alloc on some systems
 	//states.reserve(std::pow(2, 20));//reserves a lot a space, enough space for 2^20 = 1'048'576 elements
 
 	loadPolicyFromFile();
@@ -66,7 +67,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 	/*
 	 * Maybe (actually most of the time in a pinball game) the good/bad reward isn't simply caused by the last action taken
-	 * A series of actions and event have lead to this specific situation, so we need to apply the reward received for the last action
+	 * A series of actions and events have lead to this specific situation, so we need to apply the reward received for the last action
 	 * to the last state in general, in other words to every possible action
 	 *
 	 * Example:
@@ -78,18 +79,22 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	 * We now want to apply the reward received in state 15 to the actions taken in the last few steps
 	 */
 
-	//"strange" syntax because it should be more efficent this way
+	//"strange" syntax because it should be more efficient this way
 	if(collectedRewards.size() == 0){
 
-		for(int i=0;i<lastActions.size();i++){
+		for(int i=1;i<lastActions.size();i++){
 
 			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
+
 			/*
 			 * If there was no reward we want to port the average value of the current state back
 			 * in order to ensure it will occur more or less often. To do that, we simply converge all
-			 * values of the previous [∆ - 2 - n] to the average of the last one [∆ - 1]
+			 * values of the previous to the average of one before
 			 */
-			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (states[lastActions[lastActions.size()-1].first].getAverageValue() - lastValue));
+
+			//printf("No rewards; %f is adjusted by %f. Current value for %s: %f\n", lastValue, ((VALUE_ADJUST_FRACTION) * (states[lastActions[i-1].first].getAverageValue() - lastValue)), lastActions[i].second->getUID(), lastValue + ((VALUE_ADJUST_FRACTION) * (states[lastActions[i-1].first].getAverageValue() - lastValue)));
+
+			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (states[lastActions[i-1].first].getAverageValue() - lastValue));
 
 			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 		}
@@ -99,17 +104,23 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 			lastValue = states[lastActions[i].first].getValue(lastActions[i].second);
 
+			//printf("%lu rewards were collected:\n", collectedRewards.size());
+
 			//Apply all collected rewards, they can't be simply added up because then values greater than 1.0f would be possible
 			for(int j=0;j<collectedRewards.size();j++){
 
 				/* As currently we don't know more than that what we did in the last state and what the result is, we create a "connection" between the action and the reward
 				 * If we receive a good reward (1.0f) the epsilonGreedy() function is more likely to select this action in exactly this state again
 				 */
+
+				//printf("    %f adjusts the value by %f. Current value: %f\n", collectedRewards[j], ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue)),  lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue)));
+
 				lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
 			}
 
 			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
+			//printf("The current value for %s is %f.\n", lastActions[i].second->getUID(), lastValue);
 		}
 	}
 
@@ -134,7 +145,7 @@ unsigned Agent::seed(){
 
 float Agent::randomFloatInRange(const float &min, const float &max){
 	std::uniform_real_distribution<float>		distribution
-	= std::uniform_real_distribution<float>(min, max);
+		= std::uniform_real_distribution<float>(min, max);
 
 	return distribution(generator);
 }

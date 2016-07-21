@@ -176,11 +176,11 @@ void PinballBot::runSimulation(){
 				rewardsCollected.push_back(sim.reward);
 			}
 
-			if(sim.reward == 0.0f){
+			if(sim.reward == Action::MIN_REWARD){
 				gameOvers++;
 			}
 
-			if(preventStablePositionsOutsideCF(sim)){
+			if(sim.reward == Action::MIN_REWARD || preventStablePositionsOutsideCF(sim)){
 				rlAgent->think(sim.getCurrentState(availableActions), rewardsCollected);
 				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
 				rewardsCollected.clear();

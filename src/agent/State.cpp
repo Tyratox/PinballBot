@@ -17,8 +17,8 @@ State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, std::vector<Action*> avai
 	this->ballPosition_f 	= ballPosition;
 	this->ballVelocity_f 	= ballVelocity;
 
-	this->ballPosition		= Coords(round(ballPosition.x), round(ballPosition.y));
-	this->ballVelocity		= Coords(round(ballVelocity.x), round(ballVelocity.y));
+	this->ballPosition		= Coords(roundPos(ballPosition.x), roundPos(ballPosition.y));
+	this->ballVelocity		= Coords(roundVel(ballVelocity.x), roundVel(ballVelocity.y));
 
 	for(int i=0;i<availableActions.size();i++){
 		setValue(availableActions[i], Action::DEFAULT_REWARD);
@@ -48,11 +48,19 @@ void State::setValue(Action *action, float value){
 	values[action] = value;
 }
 
-char* State::round(float32 f){
+char* State::roundPos(float32 f){
 	if(f > 10){f = 0;}
 
 	char buf[8];
 	sprintf(buf, "%.2f", f);
+	return strdup(buf);
+}
+
+char* State::roundVel(float32 f){
+	if(f > 10){f = 0;}
+
+	char buf[8];
+	sprintf(buf, "%.1f", f);
 	return strdup(buf);
 }
 
