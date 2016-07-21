@@ -72,7 +72,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	 *
 	 * Example:
 	 * State 0:		Action: EnableFlipperLeft		Reward:	0.0f	Cause: Ball leaves the CF in the direction of a pin
-	 * State 10:	Action: DisableFlipperRight		Reward: 0.0f	Cause: Nothing, ball is still travelling in the direction of the pin
+	 * State 10:	Action: DisableFlipperRight		Reward: 0.0f	Cause: Nothing, ball is still traveling in the direction of the pin
 	 * State 15:	Action: DisableFlipperRight		Reward: 1.0f	Cause: Nothing BUT the ball kicked in state 0 hits the pin and causes a reward of 1.0f
 	 *
 	 * Now we want to series of actions taken from the last few states to occur more often because we know it was "good"
