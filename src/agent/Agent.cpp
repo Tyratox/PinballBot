@@ -49,7 +49,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	int		currentStateIndex	= 0;
 	float	lastValue;
 
-	//first check whether this state already occured or not and retrieve the iterator
+	//first check whether this state already occurred or not and retrieve the iterator
 	std::vector<State>::iterator it = std::lower_bound(states.begin(), states.end(), state);
 	currentStateIndex = (it - states.begin());
 
