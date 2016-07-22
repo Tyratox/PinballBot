@@ -14,11 +14,19 @@
 #include <Box2D/Box2D.h>
 
 State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, std::vector<Action*> availableActions){
+
+	char posX[8], posY[8], velX[8], velY[8];
+
 	this->ballPosition_f 	= ballPosition;
 	this->ballVelocity_f 	= ballVelocity;
 
-	this->ballPosition		= Coords(roundPos(ballPosition.x), roundPos(ballPosition.y));
-	this->ballVelocity		= Coords(roundVel(ballVelocity.x), roundVel(ballVelocity.y));
+	roundPos(ballPosition.x, posX);
+	roundPos(ballPosition.y, posY);
+	roundVel(ballVelocity.x, velX);
+	roundVel(ballVelocity.y, velY);
+
+	this->ballPosition		= Coords(posX, posY);
+	this->ballVelocity		= Coords(velX, velY);
 
 	for(int i=0;i<availableActions.size();i++){
 		setValue(availableActions[i], Action::DEFAULT_REWARD);
@@ -52,20 +60,14 @@ void State::setValue(Action *action, float value){
 	values[action] = value;
 }
 
-char* State::roundPos(float32 f){
+void State::roundPos(float32 f, char* result){
 	if(f > 10){f = 0;}
-
-	char buf[8];
-	sprintf(buf, "%.2f", f);
-	return strdup(buf);
+	sprintf(result, "%.2f", f);
 }
 
-char* State::roundVel(float32 f){
+void State::roundVel(float32 f, char* result){
 	if(f > 10){f = 0;}
-
-	char buf[8];
-	sprintf(buf, "%.1f", f);
-	return strdup(buf);
+	sprintf(result, "%.1f", f);
 }
 
 void State::debug(){

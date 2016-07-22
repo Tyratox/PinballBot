@@ -71,16 +71,18 @@ class State{
 		/**
 		 * Rounds a float to a char (with "position precision")
 		 * @param	f				float32	The floating point number to round
-		 * @return					char*
+		 * @param	result			char*	The char array to which the result should be copied
+		 * @return					void
 		 */
-		char* roundPos(float32 f);
+		void roundPos(float32 f, char* result);
 
 		/**
 		 * Rounds a float to a char (with "velocity precision")
 		 * @param	f				float32	The floating point number to round
-		 * @return					char*
+		 * @param	result			char*	The char array to which the result should be copied
+		 * @return					void
 		 */
-		char* roundVel(float32 f);
+		void roundVel(float32 f, char* result);
 
 		/**
 		 * Prints some debugging values
