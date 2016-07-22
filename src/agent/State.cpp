@@ -35,13 +35,17 @@ float State::getValue(Action *action){
 }
 
 float State::getAverageValue(){
-	float average = 0;
+	float	average = 0;
+	int		count	= 0;
 
 	for(auto const &iter : values){
-		average += iter.second;
+		if(iter.second != Action::DEFAULT_REWARD){
+			average += iter.second;
+			count++;
+		}
 	}
 
-	return (average / values.size());
+	return count == 0 ? Action::DEFAULT_REWARD : (average / count);
 }
 
 void State::setValue(Action *action, float value){
