@@ -20,22 +20,14 @@
 class State{
 
 	public:
-		class Coords{
-			public:
-				char x[8], y[8];
-
-				Coords(const char* x = "0", const char* y = "0");
-			};
-
-	public:
 
 		std::map<Action*, float> 		values;
 
-		Coords							ballPosition;
-		Coords							ballVelocity;
+		int								ballPosition_x;
+		int								ballPosition_y;
 
-		b2Vec2							ballPosition_f;
-		b2Vec2							ballVelocity_f;
+		int								ballVelocity_x;
+		int								ballVelocity_y;
 
 		/**
 		 * Inits a state
@@ -43,6 +35,15 @@ class State{
 		 * @param	ballVelocity		b2Vec2					The ball velocity
 		 */
 		State(const b2Vec2 ballPosition = b2Vec2(0, 0), const b2Vec2 ballVelocity = b2Vec2(0, 0), std::vector<Action*> availableActions = std::vector<Action*>(0));
+
+		/**
+		 * Inits a state
+		 * @param	ballPosition_x		int						The balls x position
+		 * @param	ballPosition_y		int						The balls y position
+		 * @param	ballVelocity_x		int						The balls x velocity
+		 * @param	ballVelocity_y		int						The balls y velocity
+		 */
+		State(int ballPosition_x = 0, int ballPosition_y = 0, int ballVelocity_x = 0, int ballVelocity_y = 0, std::vector<Action*> availableActions = std::vector<Action*>(0));
 
 		/**
 		 * Gets the expected reward if a specific action is taken
@@ -53,11 +54,11 @@ class State{
 		float getValue(Action *action);
 
 		/**
-		 * Gets the average value
+		 * Gets the "general" value
 		 * @return			float	The expected reward
 		 */
 
-		float getAverageValue();
+		float getGeneralValue();
 
 		/**
 		 * Sets the expected reward if a specific action is taken
@@ -71,18 +72,16 @@ class State{
 		/**
 		 * Rounds a float to a char (with "position precision")
 		 * @param	f				float32	The floating point number to round
-		 * @param	result			char*	The char array to which the result should be copied
-		 * @return					void
+		 * @return					int
 		 */
-		void roundPos(float32 f, char* result);
+		int roundPos(float32 f);
 
 		/**
 		 * Rounds a float to a char (with "velocity precision")
 		 * @param	f				float32	The floating point number to round
-		 * @param	result			char*	The char array to which the result should be copied
-		 * @return					void
+		 * @return					int
 		 */
-		void roundVel(float32 f, char* result);
+		int roundVel(float32 f);
 
 		/**
 		 * Prints some debugging values
@@ -90,9 +89,6 @@ class State{
 		 */
 		void debug();
 };
-
-bool operator ==	(const State::Coords & lhs, const State::Coords & rhs);
-bool operator !=	(const State::Coords & lhs, const State::Coords & rhs);
 
 bool operator ==	(const State & lhs, const State & rhs);
 bool operator !=	(const State & lhs, const State & rhs);

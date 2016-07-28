@@ -15,79 +15,72 @@
 
 State::State(b2Vec2 ballPosition, b2Vec2 ballVelocity, std::vector<Action*> availableActions){
 
-	char posX[8], posY[8], velX[8], velY[8];
+	ballPosition_x	= roundPos(ballPosition.x);
+	ballPosition_y	= roundPos(ballPosition.y);
 
-	this->ballPosition_f 	= ballPosition;
-	this->ballVelocity_f 	= ballVelocity;
-
-	roundPos(ballPosition.x, posX);
-	roundPos(ballPosition.y, posY);
-	roundVel(ballVelocity.x, velX);
-	roundVel(ballVelocity.y, velY);
-
-	this->ballPosition		= Coords(posX, posY);
-	this->ballVelocity		= Coords(velX, velY);
+	ballVelocity_x	= roundVel(ballVelocity.x);
+	ballVelocity_x	= roundVel(ballVelocity.y);
 
 	for(int i=0;i<availableActions.size();i++){
 		setValue(availableActions[i], Action::DEFAULT_REWARD);
 	}
 }
 
-State::Coords::Coords(const char* x, const char* y) : x{'0'}, y{'0'}{
-	strcpy(this->x, x);
-	strcpy(this->y, y);
+State::State(int ballPosition_x, int ballPosition_y,
+				int ballVelocity_x, int ballVelocity_y,
+				std::vector<Action*> availableActions) :
+
+				ballPosition_x(ballPosition_x), ballPosition_y(ballPosition_y),
+				ballVelocity_x(ballVelocity_x), ballVelocity_y(ballPosition_y)
+		{
+
+	for(int i=0;i<availableActions.size();i++){
+		setValue(availableActions[i], Action::DEFAULT_REWARD);
+	}
 }
 
 float State::getValue(Action *action){
 	return values[action];
 }
 
-float State::getAverageValue(){
-	float	average = 0;
-	int		count	= 0;
+float State::getGeneralValue(){
+	float max = 0;
 
 	for(auto const &iter : values){
-		if(iter.second != Action::DEFAULT_REWARD){
-			average += iter.second;
-			count++;
+		if(iter.second > max){
+			max = iter.second;
 		}
 	}
 
-	return count == 0 ? Action::DEFAULT_REWARD : (average / count);
+	return max;
 }
 
 void State::setValue(Action *action, float value){
 	values[action] = value;
 }
 
-void State::roundPos(float32 f, char* result){
+int State::roundPos(float32 f){
 	if(f > 10){f = 0;}
-	sprintf(result, "%.2f", f);
+	return (int) std::round(f * 100);
 }
 
-void State::roundVel(float32 f, char* result){
+int State::roundVel(float32 f){
 	if(f > 10){f = 0;}
-	sprintf(result, "%.1f", f);
+	return (int) std::round(f * 10);
 }
 
 void State::debug(){
-	printf("POS_X: %s, POS_Y_ %s, VEL_X: %s, VEL_Y: %s | ", ballPosition.x, ballPosition.y, ballVelocity.x, ballVelocity.y);
+	printf("POS_x: %d, POS_y_ %d, VEL_x: %d, VEL_y: %d | ", ballPosition_x, ballPosition_y, ballVelocity_x, ballVelocity_y);
 	for(auto const &iter : values){
 		printf("%s : %f;", iter.first->getUID(), iter.second);
 	}
 	printf("\n");
 }
 
-bool operator==(const State::Coords& lhs, const State::Coords& rhs){
-	return strcmp(lhs.x, rhs.x) == 0 && strcmp(lhs.y, rhs.y) == 0;
-}
-bool operator!=(const State::Coords& lhs, const State::Coords& rhs){
-	return strcmp(lhs.x, rhs.x) != 0 || strcmp(lhs.y, rhs.y) != 0;
-}
-
-
 bool operator==(const State& lhs, const State& rhs){
-	return lhs.ballPosition == rhs.ballPosition && lhs.ballVelocity == rhs.ballVelocity;
+	return lhs.ballPosition_x == rhs.ballPosition_x
+			&& lhs.ballPosition_y == rhs.ballPosition_y
+			&& lhs.ballVelocity_x == rhs.ballVelocity_y;
 }
 
 bool operator!=(const State& lhs, const State& rhs){
@@ -95,17 +88,17 @@ bool operator!=(const State& lhs, const State& rhs){
 }
 
 bool operator>(const State& lhs, const State& rhs){
-	if(lhs.ballPosition.x != rhs.ballPosition.x){
-		return lhs.ballPosition_f.x > rhs.ballPosition_f.x;
+	if(lhs.ballPosition_x != rhs.ballPosition_x){
+		return lhs.ballPosition_x > rhs.ballPosition_x;
 
-	}else if(lhs.ballPosition.y != rhs.ballPosition.y){
-		return lhs.ballPosition_f.y > rhs.ballPosition_f.y;
+	}else if(lhs.ballPosition_y != rhs.ballPosition_y){
+		return lhs.ballPosition_y > rhs.ballPosition_y;
 
-	}else if(lhs.ballVelocity.x != rhs.ballVelocity.x){
-		return lhs.ballVelocity_f.x > rhs.ballVelocity_f.x;
+	}else if(lhs.ballVelocity_x != rhs.ballVelocity_x){
+		return lhs.ballVelocity_x > rhs.ballVelocity_x;
 
-	}else if(lhs.ballVelocity.y != rhs.ballVelocity.y){
-		return lhs.ballVelocity_f.y > rhs.ballVelocity_f.y;
+	}else if(lhs.ballVelocity_y != rhs.ballVelocity_y){
+		return lhs.ballVelocity_y > rhs.ballVelocity_y;
 
 	}else{
 		return false;
@@ -113,17 +106,17 @@ bool operator>(const State& lhs, const State& rhs){
 }
 
 bool operator<(const State& lhs, const State& rhs){
-	if(lhs.ballPosition.x != rhs.ballPosition.x){
-		return lhs.ballPosition_f.x < rhs.ballPosition_f.x;
+	if(lhs.ballPosition_x != rhs.ballPosition_x){
+		return lhs.ballPosition_x < rhs.ballPosition_x;
 
-	}else if(lhs.ballPosition.y != rhs.ballPosition.y){
-		return lhs.ballPosition_f.y < rhs.ballPosition_f.y;
+	}else if(lhs.ballPosition_y != rhs.ballPosition_y){
+		return lhs.ballPosition_y < rhs.ballPosition_y;
 
-	}else if(lhs.ballVelocity.x != rhs.ballVelocity.x){
-		return lhs.ballVelocity_f.x < rhs.ballVelocity_f.x;
+	}else if(lhs.ballVelocity_x != rhs.ballVelocity_x){
+		return lhs.ballVelocity_x < rhs.ballVelocity_x;
 
-	}else if(lhs.ballVelocity.y != rhs.ballVelocity.y){
-		return lhs.ballVelocity_f.y < rhs.ballVelocity_f.y;
+	}else if(lhs.ballVelocity_y != rhs.ballVelocity_y){
+		return lhs.ballVelocity_y < rhs.ballVelocity_y;
 
 	}else{
 		return false;

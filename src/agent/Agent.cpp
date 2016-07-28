@@ -85,7 +85,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 		states[lastActions[lastActionIndex].first].setValue(
 				lastActions[lastActionIndex].second,
-				lastValue + ((VALUE_ADJUST_FRACTION) * (state.getAverageValue() - lastValue))
+				lastValue + ((VALUE_ADJUST_FRACTION) * (state.getGeneralValue() - lastValue))
 		);
 	}
 
@@ -107,13 +107,15 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 				//printf("    %f adjusts the value by %f. Current value: %f\n", collectedRewards[j], ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue)),  lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue)));
 
-				lastValue = lastValue + ((VALUE_ADJUST_FRACTION * (i / lastActions.size())) * (collectedRewards[j] - lastValue));
+				lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
 			}
 
 			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
+
 			//printf("The current value for %s is %f.\n", lastActions[i].second->getUID(), lastValue);
 		}
+
 	}
 
 	//then decide what action to take next
@@ -221,8 +223,8 @@ void Agent::savePoliciesToFile(){
 		//and the content in the same order
 
 		for(int i=0;i<states.size();i++){
-			policies << states[i].ballPosition.x << ";" << states[i].ballPosition.y << ";"
-								<< states[i].ballVelocity.x << ";" << states[i].ballVelocity.y;
+			policies << states[i].ballPosition_x << ";" << states[i].ballPosition_y << ";"
+								<< states[i].ballVelocity_x << ";" << states[i].ballVelocity_y;
 
 			for(int j=0;j<availableActions.size();j++){
 
@@ -257,10 +259,8 @@ void Agent::loadPolicyFromFile(){
 
 		while (std::getline(policies, line)){
 
-			b2Vec2	ballPosition;
-			b2Vec2	ballVelocity;
-			bool	posX = false, posY = false, velX = false, velY = false, stateInit = false;
-			State	state;
+			bool	posX = false, posY = false, velX = false, velY = false;
+			State	state(0, 0, 0, 0, availableActions);
 
 			split(line, ';', partials);
 			if(partials.size() != headerPartials.size()){
@@ -270,35 +270,29 @@ void Agent::loadPolicyFromFile(){
 
 			for(int i=0;i<partials.size();i++){
 
-				//init state with values as soon as all the necessary values are loaded
-				if((posX && posY && velX && velY) && !stateInit){
-					state				= State(ballPosition, ballVelocity, availableActions);
-					stateInit			= true;
-				}
-
 				if(headerPartials[i] == POLICIES_HEADER_POSITION_X){
-					ballPosition.x		= stof(partials[i]);
-					posX				= true;
+					state.ballPosition_x	= stoi(partials[i]);
+					posX					= true;
 				}else if(headerPartials[i] == POLICIES_HEADER_POSITION_Y){
-					ballPosition.y		= stof(partials[i]);
-					posY				= true;
+					state.ballPosition_y	= stoi(partials[i]);
+					posY					= true;
 				}else if(headerPartials[i] == POLICIES_HEADER_VELOCITY_X){
-					ballVelocity.x		= stof(partials[i]);
-					velX				= true;
+					state.ballVelocity_x	= stoi(partials[i]);
+					velX					= true;
 				}else if(headerPartials[i] == POLICIES_HEADER_VELOCITY_Y){
-					ballVelocity.y		= stof(partials[i]);
-					velY				= true;
-				}else if(stateInit){
+					state.ballVelocity_x	= stoi(partials[i]);
+					velY					= true;
+				}else{
 					for(int j=0; j<availableActions.size(); j++){
 						if(headerPartials[i] == (POLICIES_HEADER_ACTION_PREFIX + std::string(availableActions[j]->getUID()))){
-							state.values[availableActions[j]] = stof(partials[POLICIES_HEADER_ACTIONS_OFFSET + j]);
+							state.values[availableActions[j]] = stoi(partials[POLICIES_HEADER_ACTIONS_OFFSET + j]);
 						}
 					}
 				}
 			}
 
 			// push new state to states if all values are loaded
-			if(posX && posY && velX && velY && stateInit){
+			if(posX && posY && velX && velY){
 				states.push_back(state);
 			}
 
