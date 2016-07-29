@@ -20,10 +20,10 @@
 class Agent{
 
 	public:
-		static const int					STATES_TO_BACKPORT;
+		static const int					DEFAULT_STATES_TO_BACKPORT;
 
-		static const float					VALUE_ADJUST_FRACTION;
-		static const float					EPSILON;
+		static const float					DEFAULT_VALUE_ADJUST_FRACTION;
+		static const float					DEFAULT_EPSILON;
 
 		static const std::string			POLICIES_HEADER_POSITION_X;
 		static const std::string			POLICIES_HEADER_POSITION_Y;
@@ -34,6 +34,11 @@ class Agent{
 		static const std::string			POLICIES_HEADER_ACTION_PREFIX;
 
 	private:
+
+		const int							STATES_TO_BACKPORT;
+
+		const float							VALUE_ADJUST_FRACTION;
+		const float							EPSILON;
 
 		std::vector<Action*>				availableActions;
 		std::default_random_engine			generator;
@@ -97,10 +102,13 @@ class Agent{
 		std::deque<std::pair<int, Action*>>	lastActions;
 
 		/**
-		 * Init the Agent class
+		 * Inits the Agent class
+		 * @param	statesToBackport	int						The amount of states a reward will be backported
+		 * @param	valueAdjustFraction	float					The fraction of the difference that will be added to the value
+		 * @param	epsilon				float					The chance the agent will choose an action at random; range: [0.0 - 1.0]
 		 * @param	availableActions	std::vector<Action*>	The actions available to the agent
 		 */
-		Agent(std::vector<Action*> availableActions);
+		Agent(int statesToBackport = DEFAULT_STATES_TO_BACKPORT, float valueAdjustFraction = DEFAULT_VALUE_ADJUST_FRACTION, float epsilon = DEFAULT_EPSILON, std::vector<Action*> availableActions = std::vector<Action*>(0));
 
 		/**
 		 * Based on a given state the agent needs to decide what to do

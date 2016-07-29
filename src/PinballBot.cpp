@@ -147,14 +147,24 @@ bool PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
 	}
 }
 
-void PinballBot::runSimulation(){
+void PinballBot::runSimulation(int argc, char** argv){
+
+	int		statesToBackport						= Agent::DEFAULT_STATES_TO_BACKPORT;
+	float	valueAdjustFraction						= Agent::DEFAULT_VALUE_ADJUST_FRACTION;
+	float	epsilon									= Agent::DEFAULT_EPSILON;
+
+	if(argc >= 4){
+		statesToBackport							= stoi(std::string(argv[1]));
+		valueAdjustFraction							= stof(std::string(argv[2]));
+		epsilon										= stof(std::string(argv[3]));
+	}
 
 	Simulation 										sim;
 	SDL_Event										e;
 
 	std::vector<Action*> availableActions			= ActionsSim::actionsAvailable(sim);
 
-	Agent											agent(availableActions);
+	Agent											agent(statesToBackport, valueAdjustFraction, epsilon, availableActions);
 	rlAgent											= &agent;
 
 	if(RENDER){
@@ -264,7 +274,7 @@ int main(int argc, char** argv) {
 	//atexit(shutdownHook);
 
 	if(PinballBot::SIMULATION){
-		bot.runSimulation();
+		bot.runSimulation(argc, argv);
 	}
 
 	return 0;

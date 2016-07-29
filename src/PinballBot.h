@@ -105,9 +105,11 @@ class PinballBot{
 
 		/**
 		 * Runs the simulation
+		 * @param		argc	int		The amount of CLI arguments
+		 * @param		argv	char**	The CLI arguments
 		 * @return		void
 		 */
-		void runSimulation();
+		void runSimulation(int argc, char** argv);
 
 		/**
 		 * The main shutdown hook

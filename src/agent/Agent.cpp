@@ -22,10 +22,9 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const int Agent::STATES_TO_BACKPORT						= 30;
-
-const float Agent::VALUE_ADJUST_FRACTION				= 0.35f;
-const float Agent::EPSILON								= 0.1f;
+const int	Agent::DEFAULT_STATES_TO_BACKPORT					= 40;
+const float Agent::DEFAULT_VALUE_ADJUST_FRACTION				= 0.3f;
+const float Agent::DEFAULT_EPSILON								= 0.11f;
 
 const std::string Agent::POLICIES_HEADER_POSITION_X		= "POSITION_X";
 const std::string Agent::POLICIES_HEADER_POSITION_Y		= "POSITION_Y";
@@ -35,8 +34,9 @@ const std::string Agent::POLICIES_HEADER_VELOCITY_Y		= "VELOCITY_Y";
 const int Agent::POLICIES_HEADER_ACTIONS_OFFSET			= 4;
 const std::string Agent::POLICIES_HEADER_ACTION_PREFIX = "ACTION_";
 
-Agent::Agent(std::vector<Action*> availableActions):
-	availableActions(availableActions), generator(seed()){
+Agent::Agent(int statesToBackport, float valueAdjustFraction, float epsilon, std::vector<Action*> availableActions):
+	STATES_TO_BACKPORT(statesToBackport), VALUE_ADJUST_FRACTION(valueAdjustFraction),
+	EPSILON(epsilon), availableActions(availableActions), generator(seed()){
 
 	//causes an std::bad_alloc on some systems
 	//states.reserve(std::pow(2, 20));//reserves a lot a space, enough space for 2^20 = 1'048'576 elements
