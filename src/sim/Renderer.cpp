@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <cmath>
 
 #include <Box2D/Box2D.h>
 
@@ -29,8 +30,8 @@ int Renderer::metersToPixels(const float &meters){
 
 b2Vec2 Renderer::toScreenCoords(const b2Vec2 &position){
 	return b2Vec2 (
-			round(width * PADDING_PERCENT) + metersToPixels(position.x),
-			round(height * PADDING_PERCENT) + metersToPixels(position.y)
+			std::round(width * PADDING_PERCENT) + metersToPixels(position.x),
+			std::round(height * PADDING_PERCENT) + metersToPixels(position.y)
 	);
 }
 
