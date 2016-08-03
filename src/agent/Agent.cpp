@@ -38,6 +38,8 @@ Agent::Agent(int statesToBackport, float valueAdjustFraction, float epsilon, std
 	STATES_TO_BACKPORT(statesToBackport), VALUE_ADJUST_FRACTION(valueAdjustFraction),
 	EPSILON(epsilon), availableActions(availableActions), generator(seed()){
 
+	printf("Starting agent with STATES_TO_BACKPORT: %d, VALUE_ADJUST_FRACTION: %f, EPSILON: %f\n", STATES_TO_BACKPORT, VALUE_ADJUST_FRACTION, EPSILON);
+
 	//causes an std::bad_alloc on some systems
 	//states.reserve(std::pow(2, 20));//reserves a lot a space, enough space for 2^20 = 1'048'576 elements
 
