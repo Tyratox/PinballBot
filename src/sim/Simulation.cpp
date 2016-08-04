@@ -43,7 +43,7 @@ const float			Simulation::FIELD_CAPTURE_X_MIN					= 0.0f;
 const float			Simulation::FIELD_CAPTURE_X_MAX					= (5 * FIELD_WIDTH / 6);
 
 const float			Simulation::FIELD_CAPTURE_Y_MIN					= (6 * FIELD_HEIGHT / 8);
-const float			Simulation::FIELD_CAPTURE_Y_MAX					= (7 * FIELD_HEIGHT / 8);;
+const float			Simulation::FIELD_CAPTURE_Y_MAX					= (7 * FIELD_HEIGHT / 8);
 
 const float			Simulation::KICKER_BORDER_POS_X					= (5 * FIELD_WIDTH / 6);
 const float			Simulation::KICKER_BORDER_POS_Y					= (6 * FIELD_HEIGHT / 8);
