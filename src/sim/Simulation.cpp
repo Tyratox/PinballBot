@@ -30,20 +30,20 @@ const float			Simulation::FIELD_HEIGHT						= 1.0f;
 const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
 /**
- * X:	0.00f - 0.42f [= 43 possibilities]
- * Y:	0.75f - 1.00f [= 26 possibilities]
+ * X:	0.00f - 0.42f	[= 43 possibilities]
+ * Y:	0.75f - 0.87f	[= 13 possibilities]
  *
- * VX:	0.0f - 9.9f [9^2 = 81 possibilities]
- * VY:	0.0f - 9.9f [9^2 = 81 possibilities]
+ * VX:	0.0f - 9.9f [10^2 = 100 possibilities]
+ * VY:	0.0f - 9.9f [10^2 = 100 possibilities]
  *
- * Max amount of states: 43 * 26 * 81^2 = 7'335'198
+ * Max amount of states: 43 * 13 * 100^2 = 5'590'000
  */
 
 const float			Simulation::FIELD_CAPTURE_X_MIN					= 0.0f;
 const float			Simulation::FIELD_CAPTURE_X_MAX					= (5 * FIELD_WIDTH / 6);
 
 const float			Simulation::FIELD_CAPTURE_Y_MIN					= (6 * FIELD_HEIGHT / 8);
-const float			Simulation::FIELD_CAPTURE_Y_MAX					= (FIELD_HEIGHT);
+const float			Simulation::FIELD_CAPTURE_Y_MAX					= (7 * FIELD_HEIGHT / 8);;
 
 const float			Simulation::KICKER_BORDER_POS_X					= (5 * FIELD_WIDTH / 6);
 const float			Simulation::KICKER_BORDER_POS_Y					= (6 * FIELD_HEIGHT / 8);
