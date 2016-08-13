@@ -61,11 +61,7 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 		//As we inserted an element we need to increase the index of all after the new one
 		for(int i=0;i<lastActions.size();i++){
-			if(lastActions[i].first == currentStateIndex){
-				if(states[currentStateIndex] < states[lastActions[i].first]){
-					lastActions[i].first++;
-				}
-			}else if(currentStateIndex < lastActions[i].first){
+			if(lastActions[i].first >= currentStateIndex){
 				lastActions[i].first++;
 			}
 		}
