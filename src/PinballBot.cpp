@@ -36,6 +36,7 @@ const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
 const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
 
+const unsigned long long		PinballBot::CLEAR_INTERVAL				= 1000000;
 const unsigned long long		PinballBot::SAVE_INTERVAL				= 100000;
 const unsigned long long		PinballBot::STATS_INTERVAL				= 50000;
 const unsigned long long		PinballBot::LOG_INTERVAL				= 10000;
@@ -217,12 +218,27 @@ void PinballBot::runSimulation(int argc, char** argv){
 
 					if(steps % SAVE_INTERVAL == 0){
 						rlAgent->savePoliciesToFile();
+
+						if(steps % CLEAR_INTERVAL == 0){
+							unsigned long previouseStateAmount = rlAgent->states.size();
+
+							rlAgent->clearStates();
+							sim.respawnBall();
+
+							printf("Cleared %lu states, Reduced size from %lu to %lu\n",
+									(previouseStateAmount - rlAgent->states.size()),
+									previouseStateAmount,
+									rlAgent->states.size()
+							);
+						}
 					}
 				}
 
 			}
 		}
 		steps++;
+
+
 	}
 }
 

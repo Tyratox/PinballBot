@@ -208,6 +208,36 @@ Action* Agent::random(std::vector<Action*> availableActions){
 	return availableActions[randomIntInRange(0, availableActions.size()-1)];
 }
 
+void Agent::clearStates(){
+
+	std::vector<int> indiciesToRemove(0);
+
+	for(int i=0;i<states.size();i++){
+		bool remove = true;
+
+
+		for(auto const &iter : states[i].values){
+			if(iter.second != Action::DEFAULT_REWARD){
+				remove = false;
+				break;
+			}
+		}
+
+		if(remove){
+			indiciesToRemove.push_back(i);
+		}
+	}
+
+	std::sort(indiciesToRemove.begin(), indiciesToRemove.end());
+
+	for(int i=(indiciesToRemove.size() - 1);i >= 0;i--){
+		states.erase(states.begin() + indiciesToRemove[i]);
+	}
+
+	lastActions.clear();
+
+}
+
 void Agent::savePoliciesToFile(){
 
 	if(states.size() != 0){

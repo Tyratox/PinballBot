@@ -119,6 +119,12 @@ class Agent{
 		void think(State s, std::vector<float> collectedRewards);
 
 		/**
+		 * Clears "useless" (all values = default)
+		 * @return void
+		 */
+		void clearStates();
+
+		/**
 		 * Saves the policy to a file
 		 */
 
