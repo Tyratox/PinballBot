@@ -202,42 +202,42 @@ void PinballBot::runSimulation(int argc, char** argv){
 				capFramerate();
 			}
 
+			if(steps != 0){
+				if(steps % LOG_INTERVAL  == 0){
+					printf("step #%lld | amount of states: %ld\n", steps, rlAgent->states.size());
+
+					if(steps % STATS_INTERVAL == 0){
+						statsLogger.log(STATS_FILE);
+
+						statsRewardsCollected = 0;
+						gameOvers = 0;
+
+						if(steps % SAVE_INTERVAL == 0){
+							rlAgent->savePoliciesToFile();
+
+							if(steps % CLEAR_INTERVAL == 0){
+								unsigned long previouseStateAmount = rlAgent->states.size();
+
+								rlAgent->clearStates();
+								sim.respawnBall();
+
+								printf("Cleared %lu states, Reduced size from %lu to %lu\n",
+										(previouseStateAmount - rlAgent->states.size()),
+										previouseStateAmount,
+										rlAgent->states.size()
+								);
+							}
+						}
+					}
+
+				}
+			}
+
+			steps++;
+
 		}else{
 			nextTime = SDL_GetTicks() + TICK_INTERVAL;
 		}
-
-		if(steps != 0){
-			if(steps % LOG_INTERVAL  == 0){
-				printf("step #%lld | amount of states: %ld\n", steps, rlAgent->states.size());
-
-				if(steps % STATS_INTERVAL == 0){
-					statsLogger.log(STATS_FILE);
-
-					statsRewardsCollected = 0;
-					gameOvers = 0;
-
-					if(steps % SAVE_INTERVAL == 0){
-						rlAgent->savePoliciesToFile();
-
-						if(steps % CLEAR_INTERVAL == 0){
-							unsigned long previouseStateAmount = rlAgent->states.size();
-
-							rlAgent->clearStates();
-							sim.respawnBall();
-
-							printf("Cleared %lu states, Reduced size from %lu to %lu\n",
-									(previouseStateAmount - rlAgent->states.size()),
-									previouseStateAmount,
-									rlAgent->states.size()
-							);
-						}
-					}
-				}
-
-			}
-		}
-		steps++;
-
 
 	}
 }
