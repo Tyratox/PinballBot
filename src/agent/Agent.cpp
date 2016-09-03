@@ -49,7 +49,7 @@ Agent::Agent(int statesToBackport, float valueAdjustFraction, float epsilon, std
 void Agent::think(State state, std::vector<float> collectedRewards){
 
 	int		currentStateIndex	= 0, lastActionIndex = lastActions.size()-1;
-	float	lastValue;
+	float	lastValue = Action::DEFAULT_REWARD;
 
 	//first check whether this state already occurred or not and retrieve the iterator
 	std::vector<State>::iterator it = std::lower_bound(states.begin(), states.end(), state);
@@ -82,13 +82,8 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	 */
 
 	if(lastActionIndex != -1){
-		//Converge the value of the state before to the average of the current state
-		lastValue = states[lastActions[lastActionIndex].first].getValue(lastActions[lastActionIndex].second);
 
-		states[lastActions[lastActionIndex].first].setValue(
-				lastActions[lastActionIndex].second,
-				lastValue + ((VALUE_ADJUST_FRACTION) * (state.getGeneralValue() - lastValue))
-		);
+		lastValue = states[lastActions[lastActionIndex].first].getValue(lastActions[lastActionIndex].second);
 	}
 
 	//Appply the rewards
@@ -111,6 +106,9 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 
 				lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (collectedRewards[j] - lastValue));
 			}
+
+			//And last but not least converge the value of the state before to the average of the current state
+			lastValue = lastValue + ((VALUE_ADJUST_FRACTION) * (state.getGeneralValue() - lastValue));
 
 			states[lastActions[i].first].setValue(lastActions[i].second, lastValue);
 
