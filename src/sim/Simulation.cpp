@@ -31,12 +31,12 @@ const float			Simulation::FIELD_SLOPE							= b2_pi / 6; //30 deg
 
 /**
  * X:	0.00f - 0.42f	[= 43 possibilities]
- * Y:	0.75f - 1.00f	[= 26 possibilities]
+ * Y:	0.75f - 0.87f	[= 13 possibilities]
  *
  * VX:	0.0f - 9.9f [10^2 = 100 possibilities]
  * VY:	0.0f - 9.9f [10^2 = 100 possibilities]
  *
- * Max amount of states: 43 * 26 * 100^2 = 11'180'000
+ * Max amount of states: 43 * 13 * 100^2 = 5'590'000
  */
 
 const float			Simulation::FIELD_CAPTURE_X_MIN					= 0.0f;
