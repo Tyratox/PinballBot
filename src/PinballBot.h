@@ -39,6 +39,8 @@ class PinballBot{
 		static const float					TIME_STEP;
 		static const float					TICK_INTERVAL;
 
+		static const float					AGENT_INCLUDE_VELOCITY;
+
 		static const unsigned long long		CLEAR_INTERVAL;
 		static const unsigned long long		SAVE_INTERVAL;
 		static const unsigned long long		STATS_INTERVAL;
