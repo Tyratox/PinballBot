@@ -13,6 +13,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
+#include <SDL2/SDL_ttf.h>
+
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include "Renderer.h"
@@ -35,7 +37,13 @@ b2Vec2 Renderer::toScreenCoords(const b2Vec2 &position){
 	);
 }
 
-Renderer::Renderer(int width, int height, const b2World *world) : width(width), height(height), world(world){
+Renderer::Renderer(int width, int height, const b2World *world) : width(width), height(height), font(NULL), world(world){
+
+	if(TTF_Init()==-1) {
+		printf("TTF_Init: %s\n", TTF_GetError());
+		exit(2);
+	}
+	font = TTF_OpenFont("opensans.ttf", 24);
 
 	SDL_Init( SDL_INIT_VIDEO );
 
@@ -71,7 +79,9 @@ Renderer::~Renderer(){
 	SDL_Quit();
 }
 
-void Renderer::render(){
+void Renderer::render(const char* score){
+
+	drawText(score, 10, 10, 0, 0, 0, 1);
 
 	for(const b2Body *body = this->world->GetBodyList(); body; body = body->GetNext()){
 
@@ -159,4 +169,22 @@ void Renderer::drawCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8
 	}else{
 		circleRGBA(renderer, (Sint16) coords.x, (Sint16) coords.y, (Sint16) metersToPixels(radius), red, green, blue, alpha);
 	}
+}
+
+void Renderer::drawText(const char* text, int posX, int posY, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha){
+	SDL_Surface* surface	= TTF_RenderText_Solid(font, text, {red, green, blue, alpha});
+	SDL_Texture* texture	= SDL_CreateTextureFromSurface(renderer, surface);
+
+	SDL_FreeSurface(surface);
+
+	SDL_Rect rect;
+	rect.x = 50;
+	rect.y = 50;
+	rect.w = surface->w;
+	rect.h = surface->h;
+
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+	SDL_DestroyTexture(texture);
+
 }

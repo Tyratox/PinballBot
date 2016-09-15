@@ -14,6 +14,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
+#include <SDL2/SDL_ttf.h>
+
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 class Renderer{
@@ -33,6 +35,8 @@ class Renderer{
 
 		SDL_Window		*window;
 		SDL_Renderer	*renderer;
+
+		TTF_Font		*font;
 
 		const b2World	*world; //stores a pointer to the Box2D world
 
@@ -64,8 +68,9 @@ class Renderer{
 
 		/**
 		 * Renders the Box2D world
+		 * @param	score			const char*
 		 */
-		void render();
+		void render(const char* score);
 
 		/**
 		 * Redraws the scene onto the window
@@ -110,6 +115,19 @@ class Renderer{
 		 * @return	void
 		 */
 		void drawCircle(const b2Vec2& center, float32 radius, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha, bool filled);
+
+		/**
+		 * Draws text
+		 * @param	text			char*		The coordinates of the center of the circle
+		 * @param	posX			int			The radius of the circle
+		 * @param	posY			int			The radius of the circle
+		 * @param	red				Uint8		The amount of red	in the color
+		 * @param	green			Uint8		The amount of green	in the color
+		 * @param	blue			Uint8		The amount of blue	in the color
+		 * @param	alpha			Uint8		The opacity of the color
+		 * @return	void
+		 */
+		void drawText(const char* text, int posX, int posY, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha);
 
 };
 

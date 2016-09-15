@@ -31,7 +31,7 @@
 
 const bool						PinballBot::SIMULATION					= true;
 
-const bool						PinballBot::RENDER						= false;
+const bool						PinballBot::RENDER						= true;
 const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
 const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
@@ -201,7 +201,7 @@ void PinballBot::runSimulation(int argc, char** argv){
 			}
 
 			if(RENDER){
-				renderer->render();
+				renderer->render(std::to_string((statsRewardsCollected - gameOvers)).c_str());
 				capFramerate();
 			}
 
