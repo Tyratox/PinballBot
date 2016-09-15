@@ -162,6 +162,13 @@ class PinballBot{
 
 		std::string logGameOvers();
 
+		/**
+		 * Logs the score
+		 * @return		std::string
+		 */
+
+		std::string logScore();
+
 };
 
 #endif /* PINBALLBOT_H_ */
