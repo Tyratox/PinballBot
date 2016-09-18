@@ -169,10 +169,10 @@ int Agent::randomIntInRange(const int &min, const int &max){
 Action* Agent::epsilonGreedy(State state, const float &epsilon){
 
 	if(epsilon < randomFloatInRange(0.0f, 1.0f)){
-		//pick a greedy state
+		//pick a greedy action
 		return greedy(state);
 	}else{
-		//pick a random state
+		//pick a random action
 		return random(availableActions);
 	}
 }
