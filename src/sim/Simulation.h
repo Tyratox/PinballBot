@@ -238,10 +238,11 @@ class Simulation{
 
 		/**
 		 * Returns the current state
-		 * @param availableActions	std::vector<Action*> The actions for which the deault reward should be set
+		 * @param availableActions	std::vector<Action*>	The actions for which the deault reward should be set
+		 * @param includeVelocity	bool					Whether the velocity should be empty (false) or not (true)
 		 * @return State
 		 */
-		State getCurrentState(std::vector<Action*> availableActions = std::vector<Action*>(0));
+		State getCurrentState(std::vector<Action*> availableActions = std::vector<Action*>(0), bool includeVelocity = true);
 
 };
 

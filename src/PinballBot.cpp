@@ -36,10 +36,12 @@ const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
 const float						PinballBot::TICK_INTERVAL				= 1000.0f / FPS;
 
-const unsigned long long		PinballBot::CLEAR_INTERVAL				= 1000000;
-const unsigned long long		PinballBot::SAVE_INTERVAL				= 100000;
-const unsigned long long		PinballBot::STATS_INTERVAL				= 50000;
-const unsigned long long		PinballBot::LOG_INTERVAL				= 10000;
+const float						PinballBot::AGENT_INCLUDE_VELOCITY		= false;
+
+const unsigned long long		PinballBot::CLEAR_INTERVAL				= 10000000;
+const unsigned long long		PinballBot::SAVE_INTERVAL				= 1000000;
+const unsigned long long		PinballBot::STATS_INTERVAL				= 500000;
+const unsigned long long		PinballBot::LOG_INTERVAL				= 100000;
 const unsigned long long		PinballBot::OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
 
 const std::string				PinballBot::STATS_FILE					= "stats.csv";
@@ -70,6 +72,7 @@ PinballBot::PinballBot() : statsLogger(), rewardsCollected(0, 0.0f){
 	statsLogger.registerLoggingColumn("AVERAGE_TIME_PER_LOOP",	std::bind(&PinballBot::logAverageTimePerLoop, this));
 	statsLogger.registerLoggingColumn("REWARDS_COLLECTED",		std::bind(&PinballBot::logRewardsCollected, this));
 	statsLogger.registerLoggingColumn("GAMEOVERS",				std::bind(&PinballBot::logGameOvers, this));
+	statsLogger.registerLoggingColumn("SCORE",					std::bind(&PinballBot::logScore, this));
 
 	statsLogger.initLog(STATS_FILE);
 }
@@ -192,13 +195,13 @@ void PinballBot::runSimulation(int argc, char** argv){
 			}
 
 			if(sim.reward == Action::MIN_REWARD || preventStablePositionsOutsideCF(sim)){
-				rlAgent->think(sim.getCurrentState(availableActions), rewardsCollected);
+				rlAgent->think(sim.getCurrentState(availableActions, AGENT_INCLUDE_VELOCITY), rewardsCollected);
 				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
 				rewardsCollected.clear();
 			}
 
 			if(RENDER){
-				renderer->render();
+				renderer->render(std::to_string((statsRewardsCollected - gameOvers)).c_str());
 				capFramerate();
 			}
 
@@ -275,6 +278,10 @@ std::string PinballBot::logRewardsCollected(){
 
 std::string PinballBot::logGameOvers(){
 	return std::to_string(gameOvers);
+}
+
+std::string PinballBot::logScore(){
+	return std::to_string((statsRewardsCollected - gameOvers));
 }
 
 void initLogFile(){
