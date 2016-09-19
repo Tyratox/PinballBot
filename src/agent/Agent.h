@@ -25,6 +25,9 @@ class Agent{
 		static const float					DEFAULT_VALUE_ADJUST_FRACTION;
 		static const float					DEFAULT_EPSILON;
 
+		static const unsigned long long		DEFAULT_STEPS_UNTIL_EPSILON_ZERO;
+		static const bool					DEFAULT_DYNAMIC_EPSILON;
+
 		static const std::string			POLICIES_HEADER_POSITION_X;
 		static const std::string			POLICIES_HEADER_POSITION_Y;
 		static const std::string			POLICIES_HEADER_VELOCITY_X;
@@ -33,12 +36,15 @@ class Agent{
 		static const int					POLICIES_HEADER_ACTIONS_OFFSET;
 		static const std::string			POLICIES_HEADER_ACTION_PREFIX;
 
-	private:
 
 		const int							STATES_TO_BACKPORT;
-
 		const float							VALUE_ADJUST_FRACTION;
 		const float							EPSILON;
+
+		const unsigned long long			STEPS_UNTIL_EPSILON_ZERO;
+		const bool							DYNAMIC_EPSILON;
+
+	private:
 
 		std::vector<Action*>				availableActions;
 		std::default_random_engine			generator;
@@ -108,21 +114,35 @@ class Agent{
 		 * @param	epsilon				float					The chance the agent will choose an action at random; range: [0.0 - 1.0]
 		 * @param	availableActions	std::vector<Action*>	The actions available to the agent
 		 */
-		Agent(int statesToBackport = DEFAULT_STATES_TO_BACKPORT, float valueAdjustFraction = DEFAULT_VALUE_ADJUST_FRACTION, float epsilon = DEFAULT_EPSILON, std::vector<Action*> availableActions = std::vector<Action*>(0));
+		Agent(
+				int						statesToBackport	= DEFAULT_STATES_TO_BACKPORT,
+				float					valueAdjustFraction	= DEFAULT_VALUE_ADJUST_FRACTION,
+				float					epsilon				= DEFAULT_EPSILON,
+				std::vector<Action*>	availableActions	= std::vector<Action*>(0),
+				unsigned long long		stepsUntilEpsilon	= DEFAULT_STEPS_UNTIL_EPSILON_ZERO,
+				bool					dynamicEpsilon		= DEFAULT_DYNAMIC_EPSILON
+		);
 
 		/**
 		 * Based on a given state the agent needs to decide what to do
 		 * @param	state		State		The given state
 		 * @param	reward		float		The returned reward
+		 * @param	steps		int			The amount of steps until this moment
 		 * @return				void
 		 */
-		void think(State s, std::vector<float> collectedRewards);
+		void think(State state, std::vector<float> collectedRewards, unsigned long long steps);
 
 		/**
 		 * Clears "useless" (all values = default)
 		 * @return void
 		 */
 		void clearStates();
+
+		/**
+		 * Calculates the current epsilon based on a quadratic function
+		 * @param	steps	unsigned long long	The current amount of steps
+		 */
+		float calcDynamicEpsilon(unsigned long long steps);
 
 		/**
 		 * Saves the policy to a file

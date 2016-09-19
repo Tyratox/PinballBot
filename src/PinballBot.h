@@ -32,8 +32,6 @@ class PinballBot{
 
 	public:
 
-		static const bool					SIMULATION;
-
 		static const bool					RENDER;
 		static const float					FPS;
 		static const float					TIME_STEP;
@@ -41,11 +39,16 @@ class PinballBot{
 
 		static const float					AGENT_INCLUDE_VELOCITY;
 
-		static const unsigned long long		CLEAR_INTERVAL;
-		static const unsigned long long		SAVE_INTERVAL;
-		static const unsigned long long		STATS_INTERVAL;
+		//static const unsigned long long	CLEAR_INTERVAL;
+		//static const unsigned long long	SAVE_INTERVAL;
 		static const unsigned long long		LOG_INTERVAL;
+
+		static const unsigned long long		BASE_STATS_INTERVAL;
+		static const unsigned int			MAX_BASE_STATS_MULTIPLE;
+
 		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
+
+		static const unsigned long long		QUIT_STEP;
 
 		static const std::string			STATS_FILE;
 		static const std::string			POLICIES_FILE;
@@ -70,6 +73,8 @@ class PinballBot{
 		unsigned long long 					gameOvers;
 
 		unsigned long long 					stepStartedBeingOutsideCF;
+		unsigned long long					nextStatsLog;
+		unsigned long long					deltaStatsLog;
 
 		std::vector<float> 					rewardsCollected;
 
@@ -121,6 +126,13 @@ class PinballBot{
 		void shutdownHook();
 
 		/**
+		 * Calculates the reward for the last delta down to an comparable average
+		 * @param	reward		double		The reward to normalize
+		 * @returns double
+		 */
+		double normalizeReward(double reward);
+
+		/**
 		 * Logs the steps count
 		 * @return		std::string
 		 */
@@ -147,6 +159,13 @@ class PinballBot{
 		 */
 
 		std::string logAverageTimePerLoop();
+
+		/**
+		 * Logs the current agent epsilon
+		 * @return		std::string
+		 */
+
+		std::string logEpsilon();
 
 		/**
 		 * Logs the rewards collected

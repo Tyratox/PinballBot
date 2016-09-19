@@ -22,9 +22,12 @@
 #include "State.h"
 #include "../action/Action.h"
 
-const int	Agent::DEFAULT_STATES_TO_BACKPORT					= 40;
-const float Agent::DEFAULT_VALUE_ADJUST_FRACTION				= 0.3f;
-const float Agent::DEFAULT_EPSILON								= 0.11f;
+const int					Agent::DEFAULT_STATES_TO_BACKPORT		= 40;
+const float					Agent::DEFAULT_VALUE_ADJUST_FRACTION	= 0.3f;
+const float					Agent::DEFAULT_EPSILON					= 0.11f;
+
+const unsigned long long	Agent::DEFAULT_STEPS_UNTIL_EPSILON_ZERO	= 5184000;
+const bool					Agent::DEFAULT_DYNAMIC_EPSILON			= true;
 
 const std::string Agent::POLICIES_HEADER_POSITION_X		= "POSITION_X";
 const std::string Agent::POLICIES_HEADER_POSITION_Y		= "POSITION_Y";
@@ -34,9 +37,23 @@ const std::string Agent::POLICIES_HEADER_VELOCITY_Y		= "VELOCITY_Y";
 const int Agent::POLICIES_HEADER_ACTIONS_OFFSET			= 4;
 const std::string Agent::POLICIES_HEADER_ACTION_PREFIX = "ACTION_";
 
-Agent::Agent(int statesToBackport, float valueAdjustFraction, float epsilon, std::vector<Action*> availableActions):
-	STATES_TO_BACKPORT(statesToBackport), VALUE_ADJUST_FRACTION(valueAdjustFraction),
-	EPSILON(epsilon), availableActions(availableActions), generator(seed()){
+Agent::Agent(
+		int							statesToBackport,
+		float						valueAdjustFraction,
+		float						epsilon,
+		std::vector<Action*>		availableActions,
+		unsigned long long			stepsUntilEpsilon,
+		bool						dynamicEpsilon
+	):
+
+		STATES_TO_BACKPORT			(statesToBackport),
+		VALUE_ADJUST_FRACTION		(valueAdjustFraction),
+		EPSILON						(epsilon),
+		STEPS_UNTIL_EPSILON_ZERO	(stepsUntilEpsilon),
+		DYNAMIC_EPSILON				(dynamicEpsilon),
+		availableActions			(availableActions),
+		generator					(seed())
+	{
 
 	printf("Starting agent with STATES_TO_BACKPORT: %d, VALUE_ADJUST_FRACTION: %f, EPSILON: %f\n", STATES_TO_BACKPORT, VALUE_ADJUST_FRACTION, EPSILON);
 
@@ -46,7 +63,7 @@ Agent::Agent(int statesToBackport, float valueAdjustFraction, float epsilon, std
 	loadPolicyFromFile();
 }
 
-void Agent::think(State state, std::vector<float> collectedRewards){
+void Agent::think(State state, std::vector<float> collectedRewards, unsigned long long steps){
 
 	int		currentStateIndex	= 0, lastActionIndex = lastActions.size()-1;
 	float	lastValue = Action::DEFAULT_REWARD;
@@ -119,7 +136,10 @@ void Agent::think(State state, std::vector<float> collectedRewards){
 	}
 
 	//then decide what action to take next
-	Action* actionToTake = this->epsilonGreedy(states[currentStateIndex], EPSILON);
+
+	Action* actionToTake;
+
+	actionToTake = this->epsilonGreedy(states[currentStateIndex], calcDynamicEpsilon(steps));
 
 	//and the JUST DO IT
 	actionToTake->run();
@@ -206,6 +226,7 @@ Action* Agent::random(std::vector<Action*> availableActions){
 	return availableActions[randomIntInRange(0, availableActions.size()-1)];
 }
 
+
 void Agent::clearStates(){
 
 	std::vector<int> indiciesToRemove(0);
@@ -234,6 +255,16 @@ void Agent::clearStates(){
 
 	lastActions.clear();
 
+}
+
+float Agent::calcDynamicEpsilon(unsigned long long steps){
+	// -1/p^2 * x^2 + q for f(p)=0, f(0)=q
+	return EPSILON;//for now
+
+	/*double e = (-1.0f/((double)STEPS_UNTIL_EPSILON_ZERO * (double)STEPS_UNTIL_EPSILON_ZERO))
+			* ((double)steps * (double)steps) + EPSILON;
+
+	return e > 0 ? e : 0;*/
 }
 
 void Agent::savePoliciesToFile(){
