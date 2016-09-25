@@ -32,6 +32,9 @@ class PinballBot{
 
 	public:
 
+		static const bool					AGENT;
+		static const bool					DYNAMIC_STEP_INCREMENT;
+
 		static const bool					RENDER;
 		static const float					FPS;
 		static const float					TIME_STEP;
@@ -48,7 +51,7 @@ class PinballBot{
 
 		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
 
-		static const unsigned long long		QUIT_STEP;
+		static const unsigned long long		DEFAULT_QUIT_STEP;
 
 		static const std::string			STATS_FILE;
 		static const std::string			POLICIES_FILE;

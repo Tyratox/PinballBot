@@ -25,8 +25,11 @@ class Agent{
 		static const float					DEFAULT_VALUE_ADJUST_FRACTION;
 		static const float					DEFAULT_EPSILON;
 
-		static const unsigned long long		DEFAULT_STEPS_UNTIL_EPSILON_ZERO;
+		static const unsigned long long		DEFAULT_STEPS_UNTIL_MIN_EPSILON;
 		static const bool					DEFAULT_DYNAMIC_EPSILON;
+
+		static const float					MIN_EPSILON;
+		static const float					DELTA_MIN_EPSILON;
 
 		static const std::string			POLICIES_HEADER_POSITION_X;
 		static const std::string			POLICIES_HEADER_POSITION_Y;
@@ -41,7 +44,7 @@ class Agent{
 		const float							VALUE_ADJUST_FRACTION;
 		const float							EPSILON;
 
-		const unsigned long long			STEPS_UNTIL_EPSILON_ZERO;
+		const unsigned long long			STEPS_UNTIL_MIN_EPSILON;
 		const bool							DYNAMIC_EPSILON;
 
 	private:
@@ -115,12 +118,12 @@ class Agent{
 		 * @param	availableActions	std::vector<Action*>	The actions available to the agent
 		 */
 		Agent(
-				int						statesToBackport	= DEFAULT_STATES_TO_BACKPORT,
-				float					valueAdjustFraction	= DEFAULT_VALUE_ADJUST_FRACTION,
-				float					epsilon				= DEFAULT_EPSILON,
-				std::vector<Action*>	availableActions	= std::vector<Action*>(0),
-				unsigned long long		stepsUntilEpsilon	= DEFAULT_STEPS_UNTIL_EPSILON_ZERO,
-				bool					dynamicEpsilon		= DEFAULT_DYNAMIC_EPSILON
+				int						statesToBackport		= DEFAULT_STATES_TO_BACKPORT,
+				float					valueAdjustFraction		= DEFAULT_VALUE_ADJUST_FRACTION,
+				float					epsilon					= DEFAULT_EPSILON,
+				std::vector<Action*>	availableActions		= std::vector<Action*>(0),
+				unsigned long long		stepsUntilMinEpsilon	= DEFAULT_STEPS_UNTIL_MIN_EPSILON,
+				bool					dynamicEpsilon			= DEFAULT_DYNAMIC_EPSILON
 		);
 
 		/**
@@ -139,10 +142,10 @@ class Agent{
 		void clearStates();
 
 		/**
-		 * Calculates the current epsilon based on a quadratic function
+		 * Calculates the current epsilon based on a quadratic function or just returns it if USE_DYNAMIC_EPSILON is false
 		 * @param	steps	unsigned long long	The current amount of steps
 		 */
-		float calcDynamicEpsilon(unsigned long long steps);
+		float getEpsilon(unsigned long long steps);
 
 		/**
 		 * Saves the policy to a file

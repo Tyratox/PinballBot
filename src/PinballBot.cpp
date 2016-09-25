@@ -30,6 +30,9 @@
 
 #include "stats/StatsLogger.h"
 
+const bool						PinballBot::AGENT						= true;
+const bool						PinballBot::DYNAMIC_STEP_INCREMENT		= false;
+
 const bool						PinballBot::RENDER						= false;
 const float						PinballBot::FPS							= 60.0f;
 const float						PinballBot::TIME_STEP					= 1.0f / FPS;
@@ -39,14 +42,14 @@ const float						PinballBot::AGENT_INCLUDE_VELOCITY		= false;
 
 //const unsigned long long		PinballBot::CLEAR_INTERVAL				= 10000000;
 //const unsigned long long		PinballBot::SAVE_INTERVAL				= 216000;//≈1h in game time
-const unsigned long long		PinballBot::LOG_INTERVAL				= 216000;
+const unsigned long long		PinballBot::LOG_INTERVAL				= 54000; //≈15 min in game time
 
-const unsigned long long		PinballBot::BASE_STATS_INTERVAL			= 7200;//≈30 min in game time
+const unsigned long long		PinballBot::BASE_STATS_INTERVAL			= 54000;//≈30 min in game time
 const unsigned int				PinballBot::MAX_BASE_STATS_MULTIPLE		= 10;
 
 const unsigned long long		PinballBot::OUTSIDE_CF_UNTIL_RESPAWN	= 1800;//1 step ≈ 1/60 sec in-game, 1800 steps ≈ 30 secs in-game
 
-const unsigned long long		PinballBot::QUIT_STEP					= 5184000;
+const unsigned long long		PinballBot::DEFAULT_QUIT_STEP			= 0;
 
 const std::string				PinballBot::STATS_FILE					= "stats.csv";
 const std::string				PinballBot::POLICIES_FILE				= "policies.csv";
@@ -161,14 +164,17 @@ bool PinballBot::preventStablePositionsOutsideCF(Simulation &sim){
 
 void PinballBot::runSimulation(int argc, char** argv){
 
-	int		statesToBackport						= Agent::DEFAULT_STATES_TO_BACKPORT;
-	float	valueAdjustFraction						= Agent::DEFAULT_VALUE_ADJUST_FRACTION;
-	float	epsilon									= Agent::DEFAULT_EPSILON;
+	int						statesToBackport		= Agent::DEFAULT_STATES_TO_BACKPORT;
+	float					valueAdjustFraction		= Agent::DEFAULT_VALUE_ADJUST_FRACTION;
+	float					epsilon					= Agent::DEFAULT_EPSILON;
+	unsigned long long		quitStep				= DEFAULT_QUIT_STEP;
 
-	if(argc >= 4){
+
+	if(argc >= 5){
 		statesToBackport							= stoi(std::string(argv[1]));
 		valueAdjustFraction							= stof(std::string(argv[2]));
 		epsilon										= stof(std::string(argv[3]));
+		quitStep									= stoi(std::string(argv[4]));
 	}
 
 	Simulation 										sim;
@@ -176,11 +182,19 @@ void PinballBot::runSimulation(int argc, char** argv){
 
 	std::vector<Action*> availableActions			= ActionsSim::actionsAvailable(sim);
 
-	Agent											agent(statesToBackport, valueAdjustFraction, epsilon, availableActions);
+	Agent											agent(
+			statesToBackport,
+			valueAdjustFraction,
+			epsilon,
+			availableActions,
+			quitStep,
+			true
+	);
+
 	rlAgent											= &agent;
 
 	if(RENDER){
-		renderer			= new Renderer(320, 640, sim.getWorld());
+		renderer									= new Renderer(320, 640, sim.getWorld());
 	}
 
 	while(!quit){
@@ -203,7 +217,10 @@ void PinballBot::runSimulation(int argc, char** argv){
 			}
 
 			if(sim.reward == Action::MIN_REWARD || preventStablePositionsOutsideCF(sim)){
-				rlAgent->think(sim.getCurrentState(availableActions, AGENT_INCLUDE_VELOCITY), rewardsCollected, steps);
+				if(AGENT){
+					rlAgent->think(sim.getCurrentState(availableActions, AGENT_INCLUDE_VELOCITY), rewardsCollected, steps);
+				}
+
 				statsRewardsCollected += std::accumulate(rewardsCollected.begin(), rewardsCollected.end(), 0.0f);
 				rewardsCollected.clear();
 			}
@@ -229,9 +246,10 @@ void PinballBot::runSimulation(int argc, char** argv){
 					 * y = MAX_BASE_STATS_MULTIPLE at x = QUIT_STEP
 					 * f(x) = (p-1)/q^2 * x^2 + 1
 					 */
-					if(QUIT_STEP > 0){
+					if(DYNAMIC_STEP_INCREMENT && quitStep > 0){
 						deltaStatsLog = (unsigned long long) std::round(BASE_STATS_INTERVAL *
-								((((double)MAX_BASE_STATS_MULTIPLE - 1.0f)/((double)QUIT_STEP * (double)QUIT_STEP)) * (steps * steps) + 1));
+								((((double)MAX_BASE_STATS_MULTIPLE - 1.0f)/((double)quitStep * (double)quitStep)) * (steps * steps) + 1));
+
 					}else{
 						deltaStatsLog = BASE_STATS_INTERVAL;
 					}
@@ -258,7 +276,7 @@ void PinballBot::runSimulation(int argc, char** argv){
 
 			steps++;
 
-			if(QUIT_STEP != 0 && steps > QUIT_STEP){
+			if(quitStep != 0 && steps > quitStep){
 				quit = true;
 			}
 
@@ -301,7 +319,7 @@ std::string PinballBot::logAverageTimePerLoop(){
 }
 
 std::string PinballBot::logEpsilon(){
-	return std::to_string(rlAgent->calcDynamicEpsilon(steps));
+	return std::to_string(rlAgent->getEpsilon(steps));
 }
 
 std::string PinballBot::logRewardsCollected(){

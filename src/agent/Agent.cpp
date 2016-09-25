@@ -7,6 +7,7 @@
 #include <vector>
 #include <chrono>
 #include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <fstream>
 #include <string>
@@ -26,8 +27,11 @@ const int					Agent::DEFAULT_STATES_TO_BACKPORT		= 40;
 const float					Agent::DEFAULT_VALUE_ADJUST_FRACTION	= 0.3f;
 const float					Agent::DEFAULT_EPSILON					= 0.11f;
 
-const unsigned long long	Agent::DEFAULT_STEPS_UNTIL_EPSILON_ZERO	= 5184000;
+const unsigned long long	Agent::DEFAULT_STEPS_UNTIL_MIN_EPSILON	= 5184000;
 const bool					Agent::DEFAULT_DYNAMIC_EPSILON			= true;
+
+const float					Agent::MIN_EPSILON						= 0.075f;
+const float					Agent::DELTA_MIN_EPSILON				= 0.005f;
 
 const std::string Agent::POLICIES_HEADER_POSITION_X		= "POSITION_X";
 const std::string Agent::POLICIES_HEADER_POSITION_Y		= "POSITION_Y";
@@ -42,14 +46,14 @@ Agent::Agent(
 		float						valueAdjustFraction,
 		float						epsilon,
 		std::vector<Action*>		availableActions,
-		unsigned long long			stepsUntilEpsilon,
+		unsigned long long			stepsUntilMinEpsilon,
 		bool						dynamicEpsilon
 	):
 
 		STATES_TO_BACKPORT			(statesToBackport),
 		VALUE_ADJUST_FRACTION		(valueAdjustFraction),
 		EPSILON						(epsilon),
-		STEPS_UNTIL_EPSILON_ZERO	(stepsUntilEpsilon),
+		STEPS_UNTIL_MIN_EPSILON		(stepsUntilMinEpsilon),
 		DYNAMIC_EPSILON				(dynamicEpsilon),
 		availableActions			(availableActions),
 		generator					(seed())
@@ -139,7 +143,7 @@ void Agent::think(State state, std::vector<float> collectedRewards, unsigned lon
 
 	Action* actionToTake;
 
-	actionToTake = this->epsilonGreedy(states[currentStateIndex], calcDynamicEpsilon(steps));
+	actionToTake = this->epsilonGreedy(states[currentStateIndex], getEpsilon(steps));
 
 	//and the JUST DO IT
 	actionToTake->run();
@@ -257,9 +261,25 @@ void Agent::clearStates(){
 
 }
 
-float Agent::calcDynamicEpsilon(unsigned long long steps){
+float Agent::getEpsilon(unsigned long long steps){
+
+	if(!DYNAMIC_EPSILON){return EPSILON;}
+
+	//f(x) := a * e^(b * x) + c
+
+	if(steps >= STEPS_UNTIL_MIN_EPSILON){
+		return MIN_EPSILON;
+	}else{
+		float a = (EPSILON - MIN_EPSILON); //the starting point
+		float b = std::log(DELTA_MIN_EPSILON / a) / STEPS_UNTIL_MIN_EPSILON; //see the proof in the docs
+		float c = MIN_EPSILON; //the horizontal asymptote
+
+		return a * std::exp(b * steps) + c;
+	}
+
+	//return EPSILON;
+
 	// -1/p^2 * x^2 + q for f(p)=0, f(0)=q
-	return EPSILON;//for now
 
 	/*double e = (-1.0f/((double)STEPS_UNTIL_EPSILON_ZERO * (double)STEPS_UNTIL_EPSILON_ZERO))
 			* ((double)steps * (double)steps) + EPSILON;
