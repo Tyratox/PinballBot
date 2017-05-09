@@ -27,7 +27,11 @@ class ContactListener: public b2ContactListener{
 		float randomFloatInRange(const float &min, const float &max);
 
 	public:
-		ContactListener(std::function<void(void)> gameOverCallback, std::function<void(float)> rewardCallback);
+
+		static const bool					RANDOM_KICKER_FORCE;
+		const bool							randomKickerForce;
+
+		ContactListener(std::function<void(void)> gameOverCallback, std::function<void(float)> rewardCallback, bool randomKickerForce);
 
 		/// This is called after a contact is updated. This allows you to inspect a
 		/// contact before it goes to the solver. If you are careful, you can modify the

@@ -43,18 +43,29 @@ Renderer::Renderer(int width, int height, const b2World *world) : width(width), 
 		printf("TTF_Init: %s\n", TTF_GetError());
 		exit(2);
 	}
-	font = TTF_OpenFont("opensans.ttf", 24);
+	font = TTF_OpenFont("opensans.ttf", 16);
 
 	SDL_Init( SDL_INIT_VIDEO );
 
-	window = SDL_CreateWindow(
-		"PinballBot",						// window title
-		SDL_WINDOWPOS_CENTERED,				// initial x position
-		SDL_WINDOWPOS_CENTERED,				// initial y position
-		this->width,						// width, in pixels
-		this->height,						// height, in pixels
-		SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
-	);
+	if(SDL_GetNumVideoDisplays() > 1){
+		window = SDL_CreateWindow(
+			"PinballBot",						// window title
+			SDL_WINDOWPOS_CENTERED_DISPLAY(1),	// initial x position
+			SDL_WINDOWPOS_CENTERED_DISPLAY(1),	// initial y position
+			this->width,						// width, in pixels
+			this->height,						// height, in pixels
+			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
+		);
+	}else{
+		window = SDL_CreateWindow(
+			"PinballBot",						// window title
+			SDL_WINDOWPOS_CENTERED,				// initial x position
+			SDL_WINDOWPOS_CENTERED,				// initial y position
+			this->width,						// width, in pixels
+			this->height,						// height, in pixels
+			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI //enables retina support
+		);
+	}
 
 	if (window == nullptr) {
 		printf("Could not create window: %s\n", SDL_GetError());
@@ -81,7 +92,7 @@ Renderer::~Renderer(){
 
 void Renderer::render(const char* score){
 
-	drawText(score, 10, 10, 0, 0, 0, 1);
+	drawText(score, 2, 2, 0, 0, 0, 1);
 
 	for(const b2Body *body = this->world->GetBodyList(); body; body = body->GetNext()){
 

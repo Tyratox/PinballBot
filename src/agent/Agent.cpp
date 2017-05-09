@@ -24,11 +24,11 @@
 #include "../action/Action.h"
 
 const int					Agent::DEFAULT_STATES_TO_BACKPORT		= 40;
-const float					Agent::DEFAULT_VALUE_ADJUST_FRACTION	= 0.3f;
+const float					Agent::DEFAULT_VALUE_ADJUST_FRACTION	= 0.1f;
 const float					Agent::DEFAULT_EPSILON					= 0.11f;
 
 const unsigned long long	Agent::DEFAULT_STEPS_UNTIL_MIN_EPSILON	= 5184000;
-const bool					Agent::DEFAULT_DYNAMIC_EPSILON			= true;
+const bool					Agent::DEFAULT_DYNAMIC_EPSILON			= false;
 
 const float					Agent::MIN_EPSILON						= 0.075f;
 const float					Agent::DELTA_MIN_EPSILON				= 0.005f;

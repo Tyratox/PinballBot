@@ -19,10 +19,14 @@
 const float ContactListener::KICKER_FORCE_Y_MIN		= 0.00075f;
 const float ContactListener::KICKER_FORCE_Y_MAX		= 0.001f;
 
-ContactListener::ContactListener(std::function<void(void)> gameOverCallback, std::function<void(float)> rewardCallback):
+const bool	ContactListener::RANDOM_KICKER_FORCE	= false;
+
+ContactListener::ContactListener(std::function<void(void)> gameOverCallback, std::function<void(float)> rewardCallback, bool randomKickerForce):
 	gameOverCallback(gameOverCallback),
 	rewardCallback(rewardCallback),
-	generator(seed()){}
+	generator(seed()),
+	randomKickerForce(randomKickerForce)
+	{};
 
 unsigned ContactListener::seed(){
 	return (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
@@ -76,7 +80,14 @@ void ContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold
 			rewardCallback(otherObject_data->reward);
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_KICKER){
-			ball->ApplyForceToCenter(b2Vec2(0.0f, randomFloatInRange(KICKER_FORCE_Y_MIN, KICKER_FORCE_Y_MAX)), true);
+
+			if(RANDOM_KICKER_FORCE){
+				ball->ApplyForceToCenter(b2Vec2(0.0f, randomFloatInRange(KICKER_FORCE_Y_MIN, KICKER_FORCE_Y_MAX)), true);
+			}else{
+				ball->ApplyForceToCenter(b2Vec2(0.0f, (KICKER_FORCE_Y_MIN + KICKER_FORCE_Y_MAX) / 2.0f), true);
+			}
+
+
 			return;
 		}else if(otherObject_data->type == UserData::PINBALL_GAMEOVER){
 			rewardCallback(Action::MIN_REWARD);

@@ -100,8 +100,8 @@ const float			Simulation::FLIPPER_RIGHT_POS_X					= (3*FIELD_HEIGHT/8);
 const float			Simulation::FLIPPER_LEFT_POS_Y					= (7*FIELD_HEIGHT/8);
 const float			Simulation::FLIPPER_RIGHT_POS_Y					= (7*FIELD_HEIGHT/8);
 
-Simulation::Simulation():
-	contactListener(std::bind(&Simulation::gameOver, this), std::bind(&Simulation::getReward, this, std::placeholders::_1)),
+Simulation::Simulation(bool randomKickerForce):
+	contactListener(std::bind(&Simulation::gameOver, this), std::bind(&Simulation::getReward, this, std::placeholders::_1), randomKickerForce),
 	gravity(GRAVITY_X, GRAVITY_Y),
 	world(this->gravity),
 	ballBody(NULL),

@@ -150,7 +150,7 @@ class Simulation{
 		/**
 		 * Inits the world and all of the needed objects
 		 */
-		Simulation();
+		Simulation(bool randomKickerForce);
 
 		/**
 		 * Returns a reference to the Box2D world

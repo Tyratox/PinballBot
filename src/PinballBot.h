@@ -32,22 +32,22 @@ class PinballBot{
 
 	public:
 
-		static const bool					AGENT;
-		static const bool					DYNAMIC_STEP_INCREMENT;
+		static const bool					DEFAULT_AGENT_ENABLED;
+		static const bool					DEFAULT_DYNAMIC_STEP_INCREMENT;
 
-		static const bool					RENDER;
+		static const bool					DEFAULT_RENDER;
 		static const float					FPS;
 		static const float					TIME_STEP;
 		static const float					TICK_INTERVAL;
 
-		static const float					AGENT_INCLUDE_VELOCITY;
+		static const bool					AGENT_INCLUDE_VELOCITY;
 
 		//static const unsigned long long	CLEAR_INTERVAL;
 		//static const unsigned long long	SAVE_INTERVAL;
 		static const unsigned long long		LOG_INTERVAL;
 
-		static const unsigned long long		BASE_STATS_INTERVAL;
-		static const unsigned int			MAX_BASE_STATS_MULTIPLE;
+		static const unsigned long long		DEFAULT_BASE_STATS_INTERVAL;
+		static const unsigned int			DEFAULT_MAX_BASE_STATS_MULTIPLE;
 
 		static const unsigned long long		OUTSIDE_CF_UNTIL_RESPAWN;
 
@@ -81,9 +81,20 @@ class PinballBot{
 
 		std::vector<float> 					rewardsCollected;
 
+
+		const bool							agentEnabled;
+		const bool							render;
+		const bool							dynamicStepIncrement;
+
+		const unsigned long long			baseStatsInterval;
+		const unsigned int					maxBaseStatsMultiple;
+
 	public:
 
-		PinballBot();
+		PinballBot(
+				bool agentEnabled, bool dynamicStepIncrement, bool render,
+				unsigned long long baseStatsInterval, unsigned int maxBaseStatsMultiple
+		);
 
 		/**
 		 * Returns the time left for the next frame
@@ -116,11 +127,9 @@ class PinballBot{
 
 		/**
 		 * Runs the simulation
-		 * @param		argc	int		The amount of CLI arguments
-		 * @param		argv	char**	The CLI arguments
 		 * @return		void
 		 */
-		void runSimulation(int argc, char** argv);
+		void runSimulation(int statesToBackport, float valueAdjustFraction, float epsilon, unsigned long long quitStep, bool dynamicEpsilon, bool randomKickerForce);
 
 		/**
 		 * The main shutdown hook
